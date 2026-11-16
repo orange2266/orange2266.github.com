@@ -21,8 +21,6 @@
   header .logo{width:34px;height:34px;border-radius:8px;background:var(--blue);display:flex;align-items:center;justify-content:center;flex:none}
   header .logo svg{width:20px;height:20px}
   header h1{font-size:16px;font-weight:700;letter-spacing:.5px}
-  header .sub{font-size:12px;color:var(--muted);margin-top:2px}
-  header .stage-tag{margin-left:auto;font-size:12px;padding:6px 12px;border:1px solid var(--line);border-radius:20px;background:#fff;color:var(--muted);pointer-events:auto}
 
   /* 浮动菜单按钮（面板收起时由 JS 显示） */
   #panelToggle{position:fixed;left:14px;top:72px;z-index:26;width:44px;height:44px;border-radius:12px;
@@ -59,19 +57,15 @@
   #panelBackdrop{position:fixed;inset:0;z-index:25;background:rgba(15,22,38,.32);display:none}
   #panelBackdrop.show{display:block}
 
-  /* 提示 */
-  #hint{position:fixed;right:20px;bottom:20px;z-index:20;font-size:12px;color:var(--muted);text-align:right;line-height:1.7;
-    background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px;max-width:240px}
-  #hint b{color:var(--ink)}
   /* 加载 */
   #loading{position:fixed;inset:0;z-index:50;background:#f2f4f8;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px}
   #loading .spin{width:38px;height:38px;border:3px solid #d4dae6;border-top-color:var(--blue);border-radius:50%;animation:rot 1s linear infinite}
   @keyframes rot{to{transform:rotate(360deg)}}
   /* 标签 */
-  .label{font-size:12px;font-weight:600;color:#16203a;background:rgba(255,255,255,.88);border:1px solid #cfd8ea;
-    padding:2px 8px;border-radius:12px;white-space:nowrap;transform:translateY(-6px);box-shadow:0 2px 8px rgba(20,30,50,.08)}
-  .label.big{font-size:13px;font-weight:700;background:var(--blue);color:#fff;border-color:var(--blue)}
-  .label.org{color:#b3540f;border-color:#f0c49b}
+  .label{font-size:12px;font-weight:600;color:#16203a;background:rgba(255,255,255,.5);border:1px solid rgba(207,216,234,.55);
+    padding:2px 8px;border-radius:12px;white-space:nowrap;transform:translateY(-6px);box-shadow:0 2px 8px rgba(20,30,50,.06)}
+  .label.big{font-size:13px;font-weight:700;background:rgba(31,58,147,.55);color:#fff;border-color:rgba(31,58,147,.55)}
+  .label.org{color:#b3540f;border-color:rgba(240,196,155,.6)}
   /* 手机 / 小屏（含竖版与横版） */
   @media (max-width:768px){
     #controlPanel{left:0;top:0;bottom:0;width:min(84vw,300px);border-radius:0;border:0}
@@ -79,9 +73,6 @@
     #panelToggle{left:12px;top:66px}
     header{padding:10px 12px}
     header h1{font-size:14px}
-    header .sub{font-size:11px}
-    header .stage-tag{display:none}
-    #hint{display:none}
   }
   /* 矮屏（手机横版）：收紧浮动按钮与顶部留白 */
   @media (max-height:480px) and (pointer:coarse){
@@ -98,9 +89,7 @@
   <div class="logo"><svg viewBox="0 0 32 32"><path d="M7 24V11l9-5 9 5v13h-6v-7h-6v7z" fill="white"/></svg></div>
   <div>
     <h1>伟世通武汉研发中心 · 揭幕庆典</h1>
-    <div class="sub">3D 基础白模 · 按总平图真实比例（1 单位 = 1 米）</div>
   </div>
-  <div class="stage-tag">阶段四：细节深化</div>
 </header>
 
 <button id="panelToggle" aria-label="打开控制面板">
@@ -143,11 +132,6 @@
   </div>
 </div>
 
-<div id="hint">
-  <b>操作</b>：左键旋转 · 右键平移 · 滚轮缩放<br>
-  <b>阶段四</b>：舞台斜坡等宽更陡/橙色 VISTEON；LED 开合屏（开口 3m，主副屏均 4m）；篷房主梁三档、篷布平行龙骨、TRUSS 灯柱帕灯；空调嘉宾区缩小；车辆 45°；道闸双车道；白沙发；标签可关闭可编辑。
-</div>
-
 <script type="importmap">
 {
   "imports":{
@@ -160,6 +144,8 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 
 const MODEL_DATA = {"scale":"1单位=1米，原点=新楼正门中心，X向东，Z向南","buildings":[{"name":"F1上栋","h":24.0,"footprint":[[29.42,-7.125],[57.789,-7.125],[57.789,9.646],[29.42,9.646]]},{"name":"E1栋","h":24.0,"footprint":[[-7.961,-14.599],[7.963,-14.599],[7.963,8.479],[-7.961,8.479]]},{"name":"茶水间","h":4.0,"footprint":[[-28.531,-10.672],[-11.893,-10.672],[-11.893,-2.619],[-28.531,-2.619]]},{"name":"E1栋","h":24.0,"footprint":[[7.963,-18.477],[14.888,-18.477],[14.888,0.001],[7.963,0.001]]},{"name":"E1栋","h":24.0,"footprint":[[-11.893,-20.81],[0.031,-20.81],[0.031,-0.007],[-11.893,-0.007]]}],"green_land":[{"name":"扇形绿地","points":[[-7.96,-2.619],[-7.96,8.479],[-8.44,8.52],[-8.951,8.555],[-9.49,8.58],[-10.058,8.595],[-10.651,8.597],[-11.269,8.585],[-11.908,8.555],[-12.569,8.508],[-13.248,8.44],[-13.945,8.349],[-14.657,8.234],[-15.383,8.093],[-16.121,7.924],[-16.87,7.724],[-17.627,7.493],[-18.391,7.227],[-19.161,6.926],[-19.934,6.586],[-20.133,6.493],[-20.344,6.394],[-20.566,6.287],[-20.798,6.172],[-21.04,6.049],[-21.291,5.916],[-21.55,5.773],[-21.817,5.62],[-22.092,5.455],[-22.372,5.279],[-22.658,5.089],[-22.949,4.887],[-23.245,4.671],[-23.544,4.441],[-23.846,4.195],[-24.151,3.934],[-24.458,3.656],[-24.765,3.361],[-25.125,2.994],[-25.464,2.625],[-25.782,2.255],[-26.081,1.884],[-26.36,1.515],[-26.621,1.148],[-26.863,0.785],[-27.089,0.427],[-27.298,0.075],[-27.49,-0.27],[-27.668,-0.606],[-27.83,-0.933],[-27.979,-1.248],[-28.113,-1.552],[-28.235,-1.842],[-28.345,-2.117],[-28.444,-2.376],[-28.531,-2.619],[-7.96,-2.619]]},{"name":"入口绿地","points":[[-18.779,18.859],[-33.811,18.859],[-33.756,14.979],[-16.054,14.466],[-18.779,18.859]]},{"name":"东南绿地","points":[[10.219,36.844],[20.371,42.651],[20.371,29.159],[16.235,29.159],[12.944,32.45],[10.219,36.844]]}],"plant_walls":[[[5.171,0.148],[7.963,8.477]],[[5.52,0.439],[7.481,7.96]],[[-7.961,0.148],[-5.169,8.477]],[[-7.48,0.439],[-5.518,7.96]]],"checkin":[{"x":-22.141,"z":0.311,"d":1.94},{"x":-12.8,"z":6.479,"d":1.94}],"booths":[{"x":16.923,"z":10.256,"d":5.17},{"x":16.923,"z":17.366,"d":5.17},{"x":16.923,"z":24.476,"d":5.17}],"spirit":[[-17.45,6.971],[-22.141,4.378],[-21.669,3.524],[-16.978,6.117],[-17.45,6.971]],"photo_wall":[[-11.845,4.661],[-17.909,1.557],[-16.919,-0.376],[-10.855,2.727],[-11.845,4.661]],"flags":[[-25.602,-22.14],[-17.94,-22.14],[-10.278,-22.14],[-2.616,-22.14],[5.047,-22.14],[12.709,-22.14],[20.371,-22.14],[-32.788,-22.14],[-24.0,4.089],[-16.625,7.96],[-10.254,8.69],[-10.254,14.366],[-10.254,18.633],[-10.254,23.004],[9.411,8.479],[20.371,-14.478],[-32.788,-15.703],[-35.098,-7.873],[-38.701,-2.654],[-42.262,2.442],[20.371,-6.815],[20.371,0.847],[20.371,7.546],[9.411,14.366],[9.411,18.633],[9.411,23.004],[9.411,27.103],[4.706,27.103],[0.001,27.103],[-28.634,-2.055],[-32.579,14.406],[-28.837,14.319],[-25.096,14.232],[-21.355,14.144],[-17.613,14.057]],"stage":[[-6.203,8.75],[6.205,8.75],[6.205,13.92],[-6.203,13.92]],"seats":[[-5.749,16.542],[-4.922,16.542],[-4.095,16.542],[-3.268,16.542],[-2.44,16.542],[-1.613,16.542],[0.789,16.542],[1.616,16.542],[2.443,16.542],[3.27,16.542],[4.098,16.542],[4.925,16.542],[-5.749,17.975],[-4.922,17.975],[-4.095,17.975],[-3.268,17.975],[-2.44,17.975],[-1.613,17.975],[0.789,17.975],[1.616,17.975],[2.443,17.975],[3.27,17.975],[4.098,17.975],[4.925,17.975],[-5.749,19.408],[-4.922,19.408],[-4.095,19.408],[-3.268,19.408],[-2.44,19.408],[-1.613,19.408],[0.789,19.408],[1.616,19.408],[2.443,19.408],[3.27,19.408],[4.098,19.408],[4.925,19.408],[-5.749,20.841],[-4.922,20.841],[-4.095,20.841],[-3.268,20.841],[-2.44,20.841],[-1.613,20.841],[0.789,20.841],[1.616,20.841],[2.443,20.841],[3.27,20.841],[4.098,20.841],[4.925,20.841]],"parking":[[[5.634,27.917],[2.909,32.31],[0.713,30.948],[3.438,26.554],[5.634,27.917]],[[8.071,29.428],[5.346,33.822],[3.149,32.459],[5.874,28.065],[8.071,29.428]],[[10.507,30.939],[7.782,35.333],[5.586,33.97],[8.311,29.577],[10.507,30.939]],[[12.944,32.45],[10.219,36.844],[8.022,35.481],[10.747,31.088],[12.944,32.45]],[[-4.112,21.872],[-6.836,26.266],[-9.033,24.904],[-6.308,20.51],[-4.112,21.872]],[[-1.675,23.384],[-4.4,27.777],[-6.597,26.415],[-3.872,22.021],[-1.675,23.384]],[[0.761,24.895],[-1.963,29.288],[-4.16,27.926],[-1.435,23.532],[0.761,24.895]],[[3.198,26.406],[0.473,30.799],[-1.724,29.437],[1.001,25.043],[3.198,26.406]],[[-13.857,15.828],[-16.582,20.222],[-18.779,18.859],[-16.054,14.466],[-13.857,15.828]],[[-11.421,17.339],[-14.146,21.733],[-16.343,20.37],[-13.618,15.977],[-11.421,17.339]],[[-8.984,18.85],[-11.709,23.244],[-13.906,21.882],[-11.181,17.488],[-8.984,18.85]],[[-6.548,20.361],[-9.273,24.755],[-11.47,23.393],[-8.745,18.999],[-6.548,20.361]]],"booth_platforms":[[[16.235,5.894],[20.371,5.894],[20.371,8.479],[16.235,8.479]],[[16.235,8.848],[20.371,8.848],[20.371,11.433],[16.235,11.433]],[[16.235,11.803],[20.371,11.803],[20.371,14.388],[16.235,14.388]],[[16.235,14.757],[20.371,14.757],[20.371,17.342],[16.235,17.342]],[[16.235,17.711],[20.371,17.711],[20.371,20.296],[16.235,20.296]],[[16.235,20.666],[20.371,20.666],[20.371,23.251],[16.235,23.251]],[[16.235,23.62],[20.371,23.62],[20.371,26.205],[16.235,26.205]],[[16.235,26.574],[20.371,26.574],[20.371,29.159],[16.235,29.159]]],"gate_pillars":[[[-34.553,9.027],[-33.564,9.027],[-33.564,13.643],[-34.553,13.643]],[[20.025,2.477],[20.718,2.477],[20.718,5.712],[20.025,5.712]],[[-17.041,-8.263],[-16.347,-8.263],[-16.347,-5.028],[-17.041,-5.028]],[[-16.694,-8.263],[-16.694,-8.263],[-16.694,-5.028],[-16.694,-5.028]]],"door_headers":[[[-4.383,-0.309],[4.386,-0.309],[4.386,0.311],[-4.383,0.311]],[[-25.177,-11.019],[-20.407,-11.019],[-20.407,-10.325],[-25.177,-10.325]],[[-25.177,-10.672],[-20.407,-10.672],[-20.407,-10.672],[-25.177,-10.672]]],"e1_outline":[[7.963,-18.476],[7.963,-14.598],[0.029,-14.598],[0.029,-20.81],[-11.892,-20.81],[-11.892,-10.673],[-28.529,-10.673],[-28.529,-2.619],[-11.892,-2.619],[-11.892,-0.007],[-7.959,-0.007],[-7.959,8.477],[7.963,8.477],[7.963,0.0],[14.886,0.0],[14.886,-18.476]],"f1_plots":[[[27.143,-24.181],[60.067,-24.181],[60.067,13.975],[27.143,13.975]],[[27.143,20.566],[60.067,20.566],[60.067,42.106],[27.143,42.106]]]};
 const D = MODEL_DATA;
@@ -222,7 +208,7 @@ const MAT = {
     building: std(0xf4f5f8, 0.65), ground: std(0xe7eaF0, 0.95), road: std(0xd6dae2, 0.92),
     green: std(0xe9ece6, 0.9), stage: std(0xe0e2e7, 0.85), wood: std(0xefede7, 0.8),
     blue: std(0xf2f4fa, 0.7), orange: std(0xf5f2ed, 0.7), dark: std(0x3a3f4a, 0.6),
-    metal: std(0xd3d7dd, 0.32, 0.9),
+    metal: std(0xdbe0e6, 0.22, 0.95),
     panel: std(0xe9ecf1, 0.5, 0.3),
     glass: glassMaterial(0xd2dae6, 0.4),
     led: ledMaterial(0x8b93a2, 0x000000),
@@ -231,9 +217,9 @@ const MAT = {
   },
   color: {
     building: std(0xe9ecf2, 0.6), ground: std(0xdfe3ea, 0.95), road: std(0x99a1b0, 0.95),
-    green: std(0x7fae6a, 0.9), stage: std(0x626772, 0.85), wood: std(0xb98d5a, 0.7),
+    green: std(0x7fae6a, 0.9), stage: std(0x6f747f, 0.85), wood: std(0xb98d5a, 0.7),
     blue: std(0x2f56c0, 0.55), orange: std(0xf08a2e, 0.6), dark: std(0x2a2f3a, 0.5),
-    metal: std(0xc4cad2, 0.28, 0.95),
+    metal: std(0xd4dae1, 0.2, 0.95),
     panel: std(0xb6bdc9, 0.4, 0.55),
     glass: glassMaterial(0x2c3d5c, 0.45),
     led: ledMaterial(0x0d1220, 0x15407f),
@@ -332,28 +318,25 @@ scene.add(flatRect(-1, 26, 38, 7.5, -31.8, 'road', 0.006));
 // 芙蓉路（南侧斜向主干道）
 scene.add(flatRect(8, 47, 110, 13, -31.8, 'road', 0.004));
 
-/* ===== E1 研发主楼（3 层：首层玻璃 + 二三层铝板，总高 15.85m） ===== */
+/* ===== E1 研发主楼（2 层：首层玻璃 + 二层铝板，平顶即天台，总高 15.85m） ===== */
 const E1_BLOCKS = [
   [[-7.96,-14.6],[7.96,-14.6],[7.96,0],[-7.96,0]],      // 中央体块
   [[7.96,-18.48],[14.89,-18.48],[14.89,0],[7.96,0]],     // 东翼
   [[-11.89,-20.81],[0.03,-20.81],[0.03,0],[-11.89,0]],   // 西翼
 ];
-const H1 = 5.0, H2 = 5.4, H3 = 5.45;   // 首层 5m，二层 5.4m，三层 5.45m，合计 15.85m
+const E1_H = 15.85, H1 = 5.0, H2 = E1_H - H1;   // 首层玻璃 5m，二层铝板 10.85m，平顶 15.85m
 E1_BLOCKS.forEach(blk => {
   G.buildings.add(extrude(blk, H1, 'glass', 0));
   G.buildings.add(extrude(blk, H2, 'panel', H1));
-  G.buildings.add(extrude(blk, H3, 'panel', H1 + H2));
 });
 
-/* ===== 正门挑檐（底板高 4m、深 8.2m，与 LED 衔接封闭；上方为二层玻璃盒） ===== */
-// 雨棚底板：宽 10m，名义深 8.2m，南缘延伸至 LED（z9.4）以封闭下方空间
-G.buildings.add(box(0, 4.7, 10, 9.4, 0.3, 'panel', 3.85));
+/* ===== 正门挑檐（底板高 4m，宽 15.4m 与一楼花坛同宽，深 8.2m 并延伸至 LED 封闭；上方做平、无楼体） ===== */
+const EAVE_W = 15.4, EAVE_HALF = EAVE_W / 2;
+// 雨棚底板：南缘延伸至 LED（z9.4）以封闭下方空间
+G.buildings.add(box(0, 4.7, EAVE_W, 9.4, 0.3, 'panel', 3.85));
 // 挑檐下方封闭空间两侧玻璃侧墙（y0~4，z0~9.4）
-G.buildings.add(box(-5, 4.7, 0.12, 9.4, 4, 'glass', 0));
-G.buildings.add(box(5, 4.7, 0.12, 9.4, 4, 'glass', 0));
-// 二层玻璃盒（底板上方，y4~10.4，深 8.2m）
-const CANOPY = [[-5, 0], [5, 0], [5, 8.2], [-5, 8.2]];
-G.buildings.add(extrude(CANOPY, 6.4, 'glass', 4));
+G.buildings.add(box(-EAVE_HALF, 4.7, 0.12, 9.4, 4, 'glass', 0));
+G.buildings.add(box(EAVE_HALF, 4.7, 0.12, 9.4, 4, 'glass', 0));
 
 /* ===== 屋顶钢结构构架（高出屋面，采光顶，15.85~18.95m） ===== */
 const FR = { x0:-5, x1:5, z0:-12.5, z1:-6.5, base:15.85, top:18.95 };
@@ -369,7 +352,7 @@ G.buildings.add(box(0, -9.5, 10, 6, 0.12, 'glass', FR.top));   // 采光顶板
 [[-6.5],[6.5],[10],[12.5],[-10.5],[-9]].forEach(([px]) =>
   G.buildings.add(box(px, 0.07, 1.5, 0.12, 1.3, 'dark', 6.8)));  // 二层
 [[-6],[0],[6]].forEach(([px]) =>
-  G.buildings.add(box(px, 0.07, 1.5, 0.12, 1.3, 'dark', 12.2))); // 三层
+  G.buildings.add(box(px, 0.07, 1.5, 0.12, 1.3, 'dark', 12.2))); // 二层高窗
 
 /* ===== 茶水间（4m 单层） / F1 上栋（6 层 24m） ===== */
 G.buildings.add(extrude(D.buildings.find(b => b.name === '茶水间').footprint, 4, 'building'));
@@ -399,9 +382,9 @@ const mainLeaves = [];
   m.userData.closedZ = 9.12; m.userData.openZ = 9.55;
   mainLeaves.push(m); ledScreens.push(m); G.event.add(m);
 });
-// 主屏两侧与挑檐侧墙之间的封板（各 1m 宽，高 4m）
-G.event.add(box(-4.5, 9.12, 1, 0.4, 4, 'dark', 0));
-G.event.add(box(4.5, 9.12, 1, 0.4, 4, 'dark', 0));
+// 主屏两侧与挑檐侧墙之间的封板（各 3.7m 宽，高 4m，封闭到挑檐侧墙 x±7.7）
+G.event.add(box(-5.85, 9.12, 3.7, 0.4, 4, 'dark', 0));
+G.event.add(box(5.85, 9.12, 3.7, 0.4, 4, 'dark', 0));
 // LED 副屏：两块 2.5m×4m，从地面起、顶部 4m 与主屏齐，在主屏正前方左右
 [-1, 1].forEach(side => {
   const m = new THREE.Mesh(new THREE.BoxGeometry(2.5, 4, 0.4), getMat('led'));
@@ -418,22 +401,30 @@ function sideSteps(side){
   }
 }
 sideSteps(-1); sideSteps(1);
-// 舞台前侧斜坡（与舞台等宽 12.4m，更陡：水平投影 0.8m）
-const RAMP_ANG=Math.atan2(0.4,0.8), RAMP_LEN=Math.hypot(0.8,0.4);
+// 舞台前侧斜坡（与舞台等宽 12.4m，加陡：水平投影 0.6m，与地面夹角约 33.7°）
+const RAMP_HPROJ=0.6;
+const RAMP_ANG=Math.atan2(0.4,RAMP_HPROJ), RAMP_LEN=Math.hypot(RAMP_HPROJ,0.4);
 const ramp=new THREE.Mesh(new THREE.BoxGeometry(12.4,0.12,RAMP_LEN),getMat('stage'));
-ramp.position.set(0,0.2,14.32); ramp.rotation.x=RAMP_ANG;
+ramp.position.set(0,0.2,13.92+RAMP_HPROJ/2); ramp.rotation.x=RAMP_ANG;
 ramp.userData.mat='stage'; ramp.castShadow=true; G.event.add(ramp);
-// VISTEON 橙色立体字（左右居中，贴合斜坡）
-const cv=document.createElement('canvas'); cv.width=1024; cv.height=256;
-const cx2=cv.getContext('2d');
-cx2.font='bold 170px Arial'; cx2.textAlign='center'; cx2.textBaseline='middle';
-cx2.shadowColor='rgba(0,0,0,.3)'; cx2.shadowBlur=14; cx2.shadowOffsetY=8;
-cx2.fillStyle='#f08a2e'; cx2.fillText('VISTEON',512,138);
-const wordTex=new THREE.CanvasTexture(cv); wordTex.colorSpace=THREE.SRGBColorSpace;
-const wordPlane=new THREE.Mesh(new THREE.PlaneGeometry(6,1.0),
-  new THREE.MeshStandardMaterial({map:wordTex,transparent:true,roughness:0.5}));
-wordPlane.position.set(0,0.27,14.32); wordPlane.rotation.x=-Math.PI/2+RAMP_ANG;
-G.event.add(wordPlane);
+// VISTEON 橙色立体字（有厚度，左右居中，贴合斜坡）
+const wordGroup=new THREE.Group();
+wordGroup.position.set(0,0.2,13.92+RAMP_HPROJ/2);
+wordGroup.rotation.x=RAMP_ANG;
+G.event.add(wordGroup);
+new FontLoader().load(
+  'https://fastly.jsdelivr.net/npm/three@0.160.0/examples/fonts/helvetiker_bold.typeface.json',
+  font => {
+    const geo=new TextGeometry('VISTEON',{font,size:0.72,height:0.14,curveSegments:6,
+      bevelEnabled:true,bevelThickness:0.02,bevelSize:0.02,bevelSegments:2});
+    geo.computeBoundingBox();
+    const b=geo.boundingBox;
+    geo.translate(-(b.min.x+b.max.x)/2,-(b.min.y+b.max.y)/2,0);  // 水平居中
+    geo.rotateX(-Math.PI/2);   // 平躺：字面朝上、厚度沿法线
+    const m=new THREE.Mesh(geo,getMat('orange'));
+    m.position.y=0.08; m.userData.mat='orange'; m.castShadow=true;
+    wordGroup.add(m);
+  });
 // 白色司仪台（舞台左前方）
 function makePodium(){
   const grp=new THREE.Group();
@@ -761,16 +752,16 @@ const otherFlags=D.flags.filter(f=>!(f[0]<-32 && f[1]>-16 && f[1]<19))
 [...otherFlags,...westFlags].forEach(f=>G.flags.add(makeFlag(f[0],f[1],f[2])));
 
 /* ===== 文字标签 ===== */
-makeLabel('E1栋 · 研发主楼（3层 15.85m）', 0, -8, 16.6, 'big');
-makeLabel('F1栋（6层 24m）', 43, 1, 25, 'big');
-makeLabel('新楼正门', 0, -1.2, 5.5);
+makeLabel('E1栋', 0, -8, 16.6, 'big');
+makeLabel('F1栋', 43, 1, 25, 'big');
+makeLabel('正门', 0, -1.2, 5.5);
 makeLabel('揭幕仪式区', 0, 5, 3.5);
 makeLabel('舞台区', 0, 11, 2.6);
-makeLabel('LED 主屏 8×4 + 副屏 2.5×4', 0, 8.2, 4.6);
-makeLabel('15m 尖顶篷房', 0, 16.2, 9.4);
+makeLabel('LED屏幕背景', 0, 8.2, 4.6);
+makeLabel('欧式篷房', 0, 16.2, 9.4);
 makeLabel('茶水间', -20, -6.5, 5);
 makeLabel('合影背景台', -14, 3, 4);
-makeLabel('VISTEON', spCx, spCz, 1.7, 'org');
+makeLabel('VISTEON精神堡垒', spCx, spCz, 1.7, 'org');
 makeLabel('展位①', 16.9, 10.3, 3.2, 'org');
 makeLabel('展位②', 16.9, 17.4, 3.2, 'org');
 makeLabel('展位③', 16.9, 24.5, 3.2, 'org');
