@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>伟世通武汉研发中心揭幕庆典 · 3D基础白模</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%231f3a93'/><path d='M8 22V12l8-5 8 5v10h-5v-6h-6v6z' fill='white'/></svg>">
+<style>
+  :root{
+    --ink:#1a2233; --panel:rgba(255,255,255,.92); --line:#d8dee8;
+    --blue:#1f3a93; --muted:#6b7688;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden;font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;color:var(--ink)}
+  #app{position:fixed;inset:0}
+  canvas{display:block}
+
+  /* 顶部标题 */
+  header{position:fixed;top:0;left:0;right:0;z-index:20;padding:14px 20px;display:flex;align-items:center;gap:14px;
+    background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(255,255,255,.75) 70%,transparent);pointer-events:none}
+  header .logo{width:34px;height:34px;border-radius:8px;background:var(--blue);display:flex;align-items:center;justify-content:center;flex:none}
+  header .logo svg{width:20px;height:20px}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.5px}
+  header .sub{font-size:12px;color:var(--muted);margin-top:2px}
+  header .stage-tag{margin-left:auto;font-size:12px;padding:6px 12px;border:1px solid var(--line);border-radius:20px;background:#fff;color:var(--muted);pointer-events:auto}
+
+  /* 控制面板 */
+  .panel{position:fixed;z-index:20;background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:14px;backdrop-filter:blur(10px);box-shadow:0 8px 30px rgba(20,30,50,.08)}
+  #viewPanel{left:20px;top:84px;width:200px}
+  #layerPanel{left:20px;bottom:20px;width:200px}
+  .panel h2{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:1px;margin-bottom:10px}
+  .vbtn{display:block;width:100%;text-align:left;padding:9px 12px;margin-bottom:6px;border:1px solid var(--line);
+    background:#fff;border-radius:9px;font-size:13px;cursor:pointer;transition:.15s;font-family:inherit;color:var(--ink)}
+  .vbtn:hover{border-color:var(--blue);color:var(--blue)}
+  .vbtn.active{background:var(--blue);border-color:var(--blue);color:#fff}
+  .vbtn:last-child{margin-bottom:0}
+  .layer-row{display:flex;align-items:center;gap:9px;padding:7px 0;font-size:13px;cursor:pointer}
+  .layer-row input{width:15px;height:15px;accent-color:var(--blue);cursor:pointer}
+  .swatch{width:10px;height:10px;border-radius:3px;flex:none}
+  .seg{display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;margin-top:4px}
+  .seg button{flex:1;border:0;background:#fff;padding:8px 0;font-size:12px;cursor:pointer;font-family:inherit;color:var(--muted)}
+  .seg button.on{background:var(--blue);color:#fff}
+
+  /* 提示 */
+  #hint{position:fixed;right:20px;bottom:20px;z-index:20;font-size:12px;color:var(--muted);text-align:right;line-height:1.7;
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px;max-width:240px}
+  #hint b{color:var(--ink)}
+  /* 加载 */
+  #loading{position:fixed;inset:0;z-index:50;background:#f2f4f8;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px}
+  #loading .spin{width:38px;height:38px;border:3px solid #d4dae6;border-top-color:var(--blue);border-radius:50%;animation:rot 1s linear infinite}
+  @keyframes rot{to{transform:rotate(360deg)}}
+  /* 标签 */
+  .label{font-size:12px;font-weight:600;color:#16203a;background:rgba(255,255,255,.88);border:1px solid #cfd8ea;
+    padding:2px 8px;border-radius:12px;white-space:nowrap;transform:translateY(-6px);box-shadow:0 2px 8px rgba(20,30,50,.08)}
+  .label.big{font-size:13px;font-weight:700;background:var(--blue);color:#fff;border-color:var(--blue)}
+  .label.org{color:#b3540f;border-color:#f0c49b}
+  @media (max-width:720px){
+    #layerPanel,#hint{display:none}
+    #viewPanel{width:168px}
+    header h1{font-size:14px}
+  }
+</style>
+</head>
+<body>
+<div id="loading"><div class="spin"></div><div style="font-size:13px;color:#6b7688">正在搭建3D基础模型…</div></div>
+<div id="app"></div>
+
+<header>
+  <div class="logo"><svg viewBox="0 0 32 32"><path d="M7 24V11l9-5 9 5v13h-6v-7h-6v7z" fill="white"/></svg></div>
+  <div>
+    <h1>伟世通武汉研发中心 · 揭幕庆典</h1>
+    <div class="sub">3D 基础白模 · 按总平图真实比例（1 单位 = 1 米）</div>
+  </div>
+  <div class="stage-tag">阶段三：精确尺寸</div>
+</header>
+
+<div class="panel" id="viewPanel">
+  <h2>视角</h2>
+  <button class="vbtn active" data-view="overview">全景鸟瞰</button>
+  <button class="vbtn" data-view="gate">新楼正门主视角</button>
+  <button class="vbtn" data-view="stage">舞台与观众区</button>
+  <button class="vbtn" data-view="photo">合影区</button>
+  <button class="vbtn" data-view="booth">展位区</button>
+</div>
+
+<div class="panel" id="layerPanel">
+  <h2>图层 / 显示</h2>
+  <label class="layer-row"><input type="checkbox" data-layer="buildings" checked><span class="swatch" style="background:#e8ebf2"></span>建筑楼体</label>
+  <label class="layer-row"><input type="checkbox" data-layer="event" checked><span class="swatch" style="background:#c9a86a"></span>活动布置</label>
+  <label class="layer-row"><input type="checkbox" data-layer="green" checked><span class="swatch" style="background:#7fae6a"></span>绿地绿植</label>
+  <label class="layer-row"><input type="checkbox" data-layer="flags" checked><span class="swatch" style="background:#2f56c0"></span>道旗</label>
+  <label class="layer-row"><input type="checkbox" data-layer="labels" checked><span class="swatch" style="background:#9aa6c0"></span>文字标签</label>
+  <h2 style="margin-top:14px">材质模式</h2>
+  <div class="seg">
+    <button id="modeWhite" class="on">白模</button>
+    <button id="modeColor">功能配色</button>
+  </div>
+  <h2 style="margin-top:14px">篷房篷布</h2>
+  <button id="tentBtn" class="vbtn" style="text-align:center;margin-bottom:0">篷布：半透明</button>
+</div>
+
+<div id="hint">
+  <b>操作</b>：左键旋转 · 右键平移 · 滚轮缩放<br>
+  <b>阶段三</b>：E1 三层 15.85m、F1 24m；挑檐深 8.2m、下高 4m；LED 主屏 8×4 + 副屏 2.5×4 两块；15m 尖顶篷房；铁艺栅栏围合。
+</div>
+
+<script type="importmap">
+{
+  "imports":{
+    "three":"https://fastly.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/":"https://fastly.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+const MODEL_DATA = {"scale":"1单位=1米，原点=新楼正门中心，X向东，Z向南","buildings":[{"name":"F1上栋","h":24.0,"footprint":[[29.42,-7.125],[57.789,-7.125],[57.789,9.646],[29.42,9.646]]},{"name":"E1栋","h":24.0,"footprint":[[-7.961,-14.599],[7.963,-14.599],[7.963,8.479],[-7.961,8.479]]},{"name":"茶水间","h":4.0,"footprint":[[-28.531,-10.672],[-11.893,-10.672],[-11.893,-2.619],[-28.531,-2.619]]},{"name":"E1栋","h":24.0,"footprint":[[7.963,-18.477],[14.888,-18.477],[14.888,0.001],[7.963,0.001]]},{"name":"E1栋","h":24.0,"footprint":[[-11.893,-20.81],[0.031,-20.81],[0.031,-0.007],[-11.893,-0.007]]}],"green_land":[{"name":"扇形绿地","points":[[-7.96,-2.619],[-7.96,8.479],[-8.44,8.52],[-8.951,8.555],[-9.49,8.58],[-10.058,8.595],[-10.651,8.597],[-11.269,8.585],[-11.908,8.555],[-12.569,8.508],[-13.248,8.44],[-13.945,8.349],[-14.657,8.234],[-15.383,8.093],[-16.121,7.924],[-16.87,7.724],[-17.627,7.493],[-18.391,7.227],[-19.161,6.926],[-19.934,6.586],[-20.133,6.493],[-20.344,6.394],[-20.566,6.287],[-20.798,6.172],[-21.04,6.049],[-21.291,5.916],[-21.55,5.773],[-21.817,5.62],[-22.092,5.455],[-22.372,5.279],[-22.658,5.089],[-22.949,4.887],[-23.245,4.671],[-23.544,4.441],[-23.846,4.195],[-24.151,3.934],[-24.458,3.656],[-24.765,3.361],[-25.125,2.994],[-25.464,2.625],[-25.782,2.255],[-26.081,1.884],[-26.36,1.515],[-26.621,1.148],[-26.863,0.785],[-27.089,0.427],[-27.298,0.075],[-27.49,-0.27],[-27.668,-0.606],[-27.83,-0.933],[-27.979,-1.248],[-28.113,-1.552],[-28.235,-1.842],[-28.345,-2.117],[-28.444,-2.376],[-28.531,-2.619],[-7.96,-2.619]]},{"name":"入口绿地","points":[[-18.779,18.859],[-33.811,18.859],[-33.756,14.979],[-16.054,14.466],[-18.779,18.859]]},{"name":"东南绿地","points":[[10.219,36.844],[20.371,42.651],[20.371,29.159],[16.235,29.159],[12.944,32.45],[10.219,36.844]]}],"plant_walls":[[[5.171,0.148],[7.963,8.477]],[[5.52,0.439],[7.481,7.96]],[[-7.961,0.148],[-5.169,8.477]],[[-7.48,0.439],[-5.518,7.96]]],"checkin":[{"x":-22.141,"z":0.311,"d":1.94},{"x":-10.254,"z":6.479,"d":1.94}],"booths":[{"x":16.923,"z":10.256,"d":5.17},{"x":16.923,"z":17.366,"d":5.17},{"x":16.923,"z":24.476,"d":5.17}],"spirit":[[-17.45,6.971],[-22.141,4.378],[-21.669,3.524],[-16.978,6.117],[-17.45,6.971]],"photo_wall":[[-11.845,4.661],[-17.909,1.557],[-16.919,-0.376],[-10.855,2.727],[-11.845,4.661]],"flags":[[-25.602,-22.14],[-17.94,-22.14],[-10.278,-22.14],[-2.616,-22.14],[5.047,-22.14],[12.709,-22.14],[20.371,-22.14],[-32.788,-22.14],[-24.0,4.089],[-16.625,7.96],[-8.545,8.69],[-10.254,14.366],[-10.254,18.633],[-10.254,23.004],[9.411,8.479],[20.371,-14.478],[-32.788,-15.703],[-35.098,-7.873],[-38.701,-2.654],[-42.262,2.442],[20.371,-6.815],[20.371,0.847],[20.371,7.546],[9.411,14.366],[9.411,18.633],[9.411,23.004],[9.411,27.103],[4.706,27.103],[0.001,27.103],[-28.634,-2.055],[-32.579,14.406],[-28.837,14.319],[-25.096,14.232],[-21.355,14.144],[-17.613,14.057]],"stage":[[-6.203,8.75],[6.205,8.75],[6.205,13.92],[-6.203,13.92]],"seats":[[-5.749,16.542],[-4.922,16.542],[-4.095,16.542],[-3.268,16.542],[-2.44,16.542],[-1.613,16.542],[0.789,16.542],[1.616,16.542],[2.443,16.542],[3.27,16.542],[4.098,16.542],[4.925,16.542],[-5.749,17.975],[-4.922,17.975],[-4.095,17.975],[-3.268,17.975],[-2.44,17.975],[-1.613,17.975],[0.789,17.975],[1.616,17.975],[2.443,17.975],[3.27,17.975],[4.098,17.975],[4.925,17.975],[-5.749,19.408],[-4.922,19.408],[-4.095,19.408],[-3.268,19.408],[-2.44,19.408],[-1.613,19.408],[0.789,19.408],[1.616,19.408],[2.443,19.408],[3.27,19.408],[4.098,19.408],[4.925,19.408],[-5.749,20.841],[-4.922,20.841],[-4.095,20.841],[-3.268,20.841],[-2.44,20.841],[-1.613,20.841],[0.789,20.841],[1.616,20.841],[2.443,20.841],[3.27,20.841],[4.098,20.841],[4.925,20.841]],"parking":[[[5.634,27.917],[2.909,32.31],[0.713,30.948],[3.438,26.554],[5.634,27.917]],[[8.071,29.428],[5.346,33.822],[3.149,32.459],[5.874,28.065],[8.071,29.428]],[[10.507,30.939],[7.782,35.333],[5.586,33.97],[8.311,29.577],[10.507,30.939]],[[12.944,32.45],[10.219,36.844],[8.022,35.481],[10.747,31.088],[12.944,32.45]],[[-4.112,21.872],[-6.836,26.266],[-9.033,24.904],[-6.308,20.51],[-4.112,21.872]],[[-1.675,23.384],[-4.4,27.777],[-6.597,26.415],[-3.872,22.021],[-1.675,23.384]],[[0.761,24.895],[-1.963,29.288],[-4.16,27.926],[-1.435,23.532],[0.761,24.895]],[[3.198,26.406],[0.473,30.799],[-1.724,29.437],[1.001,25.043],[3.198,26.406]],[[-13.857,15.828],[-16.582,20.222],[-18.779,18.859],[-16.054,14.466],[-13.857,15.828]],[[-11.421,17.339],[-14.146,21.733],[-16.343,20.37],[-13.618,15.977],[-11.421,17.339]],[[-8.984,18.85],[-11.709,23.244],[-13.906,21.882],[-11.181,17.488],[-8.984,18.85]],[[-6.548,20.361],[-9.273,24.755],[-11.47,23.393],[-8.745,18.999],[-6.548,20.361]]],"booth_platforms":[[[16.235,5.894],[20.371,5.894],[20.371,8.479],[16.235,8.479]],[[16.235,8.848],[20.371,8.848],[20.371,11.433],[16.235,11.433]],[[16.235,11.803],[20.371,11.803],[20.371,14.388],[16.235,14.388]],[[16.235,14.757],[20.371,14.757],[20.371,17.342],[16.235,17.342]],[[16.235,17.711],[20.371,17.711],[20.371,20.296],[16.235,20.296]],[[16.235,20.666],[20.371,20.666],[20.371,23.251],[16.235,23.251]],[[16.235,23.62],[20.371,23.62],[20.371,26.205],[16.235,26.205]],[[16.235,26.574],[20.371,26.574],[20.371,29.159],[16.235,29.159]]],"gate_pillars":[[[-34.553,9.027],[-33.564,9.027],[-33.564,13.643],[-34.553,13.643]],[[20.025,2.477],[20.718,2.477],[20.718,5.712],[20.025,5.712]],[[-17.041,-8.263],[-16.347,-8.263],[-16.347,-5.028],[-17.041,-5.028]],[[-16.694,-8.263],[-16.694,-8.263],[-16.694,-5.028],[-16.694,-5.028]]],"door_headers":[[[-4.383,-0.309],[4.386,-0.309],[4.386,0.311],[-4.383,0.311]],[[-25.177,-11.019],[-20.407,-11.019],[-20.407,-10.325],[-25.177,-10.325]],[[-25.177,-10.672],[-20.407,-10.672],[-20.407,-10.672],[-25.177,-10.672]]],"e1_outline":[[7.963,-18.476],[7.963,-14.598],[0.029,-14.598],[0.029,-20.81],[-11.892,-20.81],[-11.892,-10.673],[-28.529,-10.673],[-28.529,-2.619],[-11.892,-2.619],[-11.892,-0.007],[-7.959,-0.007],[-7.959,8.477],[7.963,8.477],[7.963,0.0],[14.886,0.0],[14.886,-18.476]],"f1_plots":[[[27.143,-24.181],[60.067,-24.181],[60.067,13.975],[27.143,13.975]],[[27.143,20.566],[60.067,20.566],[60.067,42.106],[27.143,42.106]]]};
+const D = MODEL_DATA;
+
+/* ===== 渲染器 / 场景 / 相机 ===== */
+const app = document.getElementById('app');
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+app.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xeef1f6);
+scene.fog = new THREE.Fog(0xeef1f6, 140, 280);
+
+const camera = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, 0.1, 1000);
+camera.position.set(48, 62, 88);
+
+const labelRenderer = new CSS2DRenderer();
+labelRenderer.setSize(innerWidth, innerHeight);
+labelRenderer.domElement.style.position = 'absolute';
+labelRenderer.domElement.style.top = '0';
+labelRenderer.domElement.style.pointerEvents = 'none';
+app.appendChild(labelRenderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(6, 0, 12);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.maxPolarAngle = Math.PI * 0.49;
+controls.minDistance = 5;
+controls.maxDistance = 175;
+controls.maxTargetRadius = 120;
+
+/* ===== 材质（白模 / 功能配色两套） ===== */
+function std(color, rough = 0.7, metal = 0) {
+  return new THREE.MeshStandardMaterial({ color, roughness: rough, metalness: metal });
+}
+// 玻璃幕墙（物理材质，半透明 + 清漆反射）
+function glassMaterial(color, opacity) {
+  return new THREE.MeshPhysicalMaterial({
+    color, roughness: 0.14, metalness: 0.28,
+    transparent: true, opacity, clearcoat: 0.7, clearcoatRoughness: 0.22,
+  });
+}
+// LED 屏（深色，功能配色下带蓝色自发光）
+function ledMaterial(color, emissive) {
+  return new THREE.MeshStandardMaterial({
+    color, roughness: 0.32, metalness: 0.35,
+    emissive, emissiveIntensity: emissive ? 0.6 : 0,
+  });
+}
+const MAT = {
+  white: {
+    building: std(0xf4f5f8, 0.65), ground: std(0xe7eaF0, 0.95), road: std(0xd6dae2, 0.92),
+    green: std(0xe9ece6, 0.9), stage: std(0xe0e2e7, 0.85), wood: std(0xefede7, 0.8),
+    blue: std(0xf2f4fa, 0.7), orange: std(0xf5f2ed, 0.7), dark: std(0x3a3f4a, 0.6),
+    metal: std(0xcdd2da, 0.4, 0.6),
+    panel: std(0xe9ecf1, 0.5, 0.3),
+    glass: glassMaterial(0xd2dae6, 0.4),
+    led: ledMaterial(0x8b93a2, 0x000000),
+    sofa: std(0xf2f3f6, 0.6), fence: std(0x9aa0ab, 0.45, 0.7),
+    ac: std(0xe8eaee, 0.55), car: std(0xc6ccd6, 0.45, 0.5), mark: std(0xffffff, 0.6),
+  },
+  color: {
+    building: std(0xe9ecf2, 0.6), ground: std(0xdfe3ea, 0.95), road: std(0x99a1b0, 0.95),
+    green: std(0x7fae6a, 0.9), stage: std(0x8b9099, 0.85), wood: std(0xb98d5a, 0.7),
+    blue: std(0x2f56c0, 0.55), orange: std(0xf08a2e, 0.6), dark: std(0x2a2f3a, 0.5),
+    metal: std(0x9aa3b2, 0.35, 0.8),
+    panel: std(0xb6bdc9, 0.4, 0.55),
+    glass: glassMaterial(0x2c3d5c, 0.45),
+    led: ledMaterial(0x0d1220, 0x15407f),
+    sofa: std(0xf6f7f9, 0.55), fence: std(0x2f343d, 0.4, 0.75),
+    ac: std(0xf2f4f7, 0.5), car: std(0x2f56c0, 0.4, 0.55), mark: std(0xffffff, 0.55),
+  },
+};
+let mode = 'white';
+function getMat(k) { return MAT[mode][k]; }
+
+/* ===== 分组 ===== */
+const G = {
+  buildings: new THREE.Group(), event: new THREE.Group(),
+  green: new THREE.Group(), flags: new THREE.Group(), labels: new THREE.Group(),
+};
+Object.values(G).forEach(g => scene.add(g));
+
+/* ===== 建模辅助 ===== */
+// 拉伸体（多边形点，高度，材质键，底标高）
+function extrude(points, height, matKey, baseY = 0) {
+  const shape = new THREE.Shape();
+  shape.moveTo(points[0][0], -points[0][1]);
+  for (let i = 1; i < points.length; i++) shape.lineTo(points[i][0], -points[i][1]);
+  shape.closePath();
+  const geo = new THREE.ExtrudeGeometry(shape, { depth: height, bevelEnabled: false });
+  geo.rotateX(-Math.PI / 2);
+  const mesh = new THREE.Mesh(geo, getMat(matKey));
+  mesh.position.y = baseY;
+  mesh.castShadow = true; mesh.receiveShadow = true;
+  mesh.userData.mat = matKey;
+  return mesh;
+}
+// 平面多边形（y 为标高）
+function flatShape(points, matKey, y = 0.02) {
+  const shape = new THREE.Shape();
+  shape.moveTo(points[0][0], -points[0][1]);
+  for (let i = 1; i < points.length; i++) shape.lineTo(points[i][0], -points[i][1]);
+  shape.closePath();
+  const geo = new THREE.ShapeGeometry(shape);
+  geo.rotateX(-Math.PI / 2);
+  const mesh = new THREE.Mesh(geo, getMat(matKey));
+  mesh.position.y = y; mesh.receiveShadow = true;
+  mesh.userData.mat = matKey;
+  return mesh;
+}
+// 轴对齐盒体
+function box(cx, cz, sx, sz, h, matKey, baseY = 0) {
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(sx, h, sz), getMat(matKey));
+  mesh.position.set(cx, baseY + h / 2, cz);
+  mesh.castShadow = true; mesh.receiveShadow = true;
+  mesh.userData.mat = matKey;
+  return mesh;
+}
+// 旋转矩形平面（道路）
+function flatRect(cx, cz, len, width, angDeg, matKey, y = 0.01) {
+  const geo = new THREE.PlaneGeometry(len, width);
+  geo.rotateX(-Math.PI / 2);
+  const mesh = new THREE.Mesh(geo, getMat(matKey));
+  mesh.position.set(cx, y, cz);
+  mesh.rotation.y = THREE.MathUtils.degToRad(angDeg);
+  mesh.receiveShadow = true; mesh.userData.mat = matKey;
+  return mesh;
+}
+// 闭合线框（用地红线）
+function lineLoop(points, color = 0x9aa3b2) {
+  const pts = points.map(p => new THREE.Vector3(p[0], 0.06, p[1]));
+  pts.push(new THREE.Vector3(points[0][0], 0.06, points[0][1]));
+  const geo = new THREE.BufferGeometry().setFromPoints(pts);
+  return new THREE.Line(geo, new THREE.LineBasicMaterial({ color }));
+}
+// 文字标签
+function makeLabel(text, x, z, y = 2, cls = '') {
+  const div = document.createElement('div');
+  div.className = 'label ' + cls;
+  div.textContent = text;
+  const obj = new CSS2DObject(div);
+  obj.position.set(x, y, z);
+  G.labels.add(obj);
+  return obj;
+}
+/* ===== 地面 ===== */
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(230, 180), getMat('ground'));
+ground.rotation.x = -Math.PI / 2;
+ground.position.set(8, 0, 10);
+ground.receiveShadow = true;
+ground.userData.mat = 'ground';
+scene.add(ground);
+
+/* ===== 道路 ===== */
+// E1 与 F1 之间南北向道路
+scene.add(flatRect(21, 10, 70, 9, 0, 'road', 0.005));
+// 斜向 33m 通道（停车带）
+scene.add(flatRect(-1, 26, 38, 7.5, -31.8, 'road', 0.006));
+// 芙蓉路（南侧斜向主干道）
+scene.add(flatRect(8, 47, 110, 13, -31.8, 'road', 0.004));
+
+/* ===== E1 研发主楼（3 层：首层玻璃 + 二三层铝板，总高 15.85m） ===== */
+const E1_BLOCKS = [
+  [[-7.96,-14.6],[7.96,-14.6],[7.96,0],[-7.96,0]],      // 中央体块
+  [[7.96,-18.48],[14.89,-18.48],[14.89,0],[7.96,0]],     // 东翼
+  [[-11.89,-20.81],[0.03,-20.81],[0.03,0],[-11.89,0]],   // 西翼
+];
+const H1 = 5.0, H2 = 5.4, H3 = 5.45;   // 首层 5m，二层 5.4m，三层 5.45m，合计 15.85m
+E1_BLOCKS.forEach(blk => {
+  G.buildings.add(extrude(blk, H1, 'glass', 0));
+  G.buildings.add(extrude(blk, H2, 'panel', H1));
+  G.buildings.add(extrude(blk, H3, 'panel', H1 + H2));
+});
+
+/* ===== 正门挑檐（底板高 4m、深 8.2m，与 LED 衔接封闭；上方为二层玻璃盒） ===== */
+// 雨棚底板：宽 10m，名义深 8.2m，南缘延伸至 LED（z9.4）以封闭下方空间
+G.buildings.add(box(0, 4.7, 10, 9.4, 0.3, 'panel', 3.85));
+// 挑檐下方封闭空间两侧玻璃侧墙（y0~4，z0~9.4）
+G.buildings.add(box(-5, 4.7, 0.12, 9.4, 4, 'glass', 0));
+G.buildings.add(box(5, 4.7, 0.12, 9.4, 4, 'glass', 0));
+// 二层玻璃盒（底板上方，y4~10.4，深 8.2m）
+const CANOPY = [[-5, 0], [5, 0], [5, 8.2], [-5, 8.2]];
+G.buildings.add(extrude(CANOPY, 6.4, 'glass', 4));
+
+/* ===== 屋顶钢结构构架（高出屋面，采光顶，15.85~18.95m） ===== */
+const FR = { x0:-5, x1:5, z0:-12.5, z1:-6.5, base:15.85, top:18.95 };
+[FR.x0, FR.x1].forEach(px => [FR.z0, FR.z1].forEach(pz =>
+  G.buildings.add(box(px, pz, 0.28, 0.28, FR.top-FR.base, 'metal', FR.base))));
+G.buildings.add(box(0, FR.z0, 10, 0.26, 0.26, 'metal', FR.top-0.13));
+G.buildings.add(box(0, FR.z1, 10, 0.26, 0.26, 'metal', FR.top-0.13));
+G.buildings.add(box(FR.x0, -9.5, 0.26, 6, 0.26, 'metal', FR.top-0.13));
+G.buildings.add(box(FR.x1, -9.5, 0.26, 6, 0.26, 'metal', FR.top-0.13));
+G.buildings.add(box(0, -9.5, 10, 6, 0.12, 'glass', FR.top));   // 采光顶板
+
+/* ===== 立面小窗（深色，嵌于铝板） ===== */
+[[-6.5],[6.5],[10],[12.5],[-10.5],[-9]].forEach(([px]) =>
+  G.buildings.add(box(px, 0.07, 1.5, 0.12, 1.3, 'dark', 6.8)));  // 二层
+[[-6],[0],[6]].forEach(([px]) =>
+  G.buildings.add(box(px, 0.07, 1.5, 0.12, 1.3, 'dark', 12.2))); // 三层
+
+/* ===== 茶水间（4m 单层） / F1 上栋（6 层 24m） ===== */
+G.buildings.add(extrude(D.buildings.find(b => b.name === '茶水间').footprint, 4, 'building'));
+G.buildings.add(extrude(D.buildings.find(b => b.name === 'F1上栋').footprint, 24, 'building'));
+// F1 用地红线（上下两地块）
+D.f1_plots.forEach(p => scene.add(lineLoop(p, 0xa6aebd)));
+
+/* ===== 绿地 ===== */
+D.green_land.forEach(g => G.green.add(flatShape(g.points, 'green', 0.03)));
+// 绿植墙 / 绿植带（4 条，矮绿篱，拉伸 1.2m）
+D.plant_walls.forEach(pw => {
+  const a = pw[0], b = pw[1];
+  const poly = [[a[0], a[1]], [b[0], a[1]], [b[0], b[1]], [a[0], b[1]]];
+  G.green.add(extrude(poly, 1.2, 'green'));
+});
+
+/* ===== 舞台（高 0.4m，灰色地毯）与 LED 屏幕 ===== */
+G.event.add(extrude(D.stage, 0.4, 'stage'));
+const ledScreens = [];
+// LED 主屏：8m×4m，左右两半各 4m（中间分缝），从地面起 4m 顶住挑檐底板，封闭挑檐空间
+[-1, 1].forEach(side => {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(4, 4, 0.4), getMat('led'));
+  m.position.set(side * 2, 2, 9.12);
+  m.castShadow = true; m.userData.mat = 'led';
+  ledScreens.push(m); G.event.add(m);
+});
+// 主屏两侧与挑檐侧墙之间的封板（各 1m 宽，高 4m）
+G.event.add(box(-4.5, 9.12, 1, 0.4, 4, 'dark', 0));
+G.event.add(box(4.5, 9.12, 1, 0.4, 4, 'dark', 0));
+// LED 副屏：两块 2.5m×4m，立于舞台面（base 0.4），在主屏正前方左右
+[-1, 1].forEach(side => {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(2.5, 4, 0.4), getMat('led'));
+  m.position.set(side * 4.91, 0.4 + 2, 9.75);
+  m.castShadow = true; m.userData.mat = 'led';
+  ledScreens.push(m); G.event.add(m);
+});
+// 舞台两侧小型踏步（3 级，上舞台用，灰色地毯材质）
+function sideSteps(side){
+  const xEdge=side*6.21;
+  for(let k=0;k<3;k++){
+    const h=0.13*(k+1), x=xEdge+side*(0.9-k*0.3);
+    G.event.add(box(x,11.5,0.32,1.5,h,'stage',0));
+  }
+}
+sideSteps(-1); sideSteps(1);
+// 舞台前侧斜坡（中间，宽 3m，从地面到舞台面 0.4m）
+const RAMP_ANG=Math.atan2(0.4,1.2), RAMP_LEN=Math.hypot(1.2,0.4);
+const ramp=new THREE.Mesh(new THREE.BoxGeometry(3,0.12,RAMP_LEN),getMat('stage'));
+ramp.position.set(0,0.2,14.6); ramp.rotation.x=RAMP_ANG;
+ramp.userData.mat='stage'; ramp.castShadow=true; G.event.add(ramp);
+// VISTEON 立体字（Canvas 纹理，贴合斜坡顶面）
+const cv=document.createElement('canvas'); cv.width=1024; cv.height=256;
+const cx2=cv.getContext('2d');
+cx2.font='bold 178px Arial'; cx2.textAlign='center'; cx2.textBaseline='middle';
+cx2.shadowColor='rgba(0,0,0,.35)'; cx2.shadowBlur=14; cx2.shadowOffsetY=8;
+cx2.fillStyle='#1f3a93'; cx2.fillText('VISTEON',512,138);
+const wordTex=new THREE.CanvasTexture(cv); wordTex.colorSpace=THREE.SRGBColorSpace;
+const wordPlane=new THREE.Mesh(new THREE.PlaneGeometry(2.8,0.7),
+  new THREE.MeshStandardMaterial({map:wordTex,transparent:true,roughness:0.5}));
+wordPlane.position.set(0,0.27,14.6); wordPlane.rotation.x=-Math.PI/2+RAMP_ANG;
+G.event.add(wordPlane);
+// 白色沙发（舞台上两侧，各一组）
+function makeSofa(x,z){
+  const grp=new THREE.Group();
+  const sb=new THREE.Mesh(new THREE.BoxGeometry(2,0.35,0.9),getMat('sofa'));
+  sb.position.y=0.175; sb.userData.mat='sofa'; grp.add(sb);
+  const bk=new THREE.Mesh(new THREE.BoxGeometry(2,0.55,0.2),getMat('sofa'));
+  bk.position.set(0,0.62,-0.35); bk.userData.mat='sofa'; grp.add(bk);
+  [-0.9,0.9].forEach(sx=>{
+    const arm=new THREE.Mesh(new THREE.BoxGeometry(0.18,0.5,0.9),getMat('sofa'));
+    arm.position.set(sx,0.35,0); arm.userData.mat='sofa'; grp.add(arm);
+  });
+  grp.position.set(x,0.4,z);
+  return grp;
+}
+G.event.add(makeSofa(-3.5,11.5));
+G.event.add(makeSofa(3.5,11.5));
+// 48 把座椅（实例化）
+const seatGeo = new THREE.BoxGeometry(0.55, 0.45, 0.55);
+const seatInst = new THREE.InstancedMesh(seatGeo, getMat('wood'), D.seats.length);
+const iq = new THREE.Quaternion();
+const scl = new THREE.Vector3(1, 1, 1);
+D.seats.forEach((s, i) => {
+  const m = new THREE.Matrix4().compose(
+    new THREE.Vector3(s[0] + 0.4, 0.225, s[1] + 0.4), iq, scl);
+  seatInst.setMatrixAt(i, m);
+});
+seatInst.castShadow = true;
+seatInst.userData.mat = 'wood';
+G.event.add(seatInst);
+
+/* ===== 15m 尖顶篷房（骨架常显，篷布可切换；屋脊沿南北向） ===== */
+const TENT = { x0:-7.75, x1:7.76, z0:8.48, z1:23.99, eave:5, ridge:8.9 };
+const T_W = TENT.x1-TENT.x0, T_D = TENT.z1-TENT.z0, T_MIDZ=(TENT.z0+TENT.z1)/2;
+const tentFrame = new THREE.Group(), tentCloth = new THREE.Group();
+G.event.add(tentFrame, tentCloth);
+const NPOST = 5;
+// 立柱（四周，每约 3.1m 一根）
+for(let n=0;n<=NPOST;n++){
+  const x = TENT.x0 + T_W*n/NPOST;
+  [TENT.z0,TENT.z1].forEach(z=>tentFrame.add(box(x,z,0.18,0.18,TENT.eave,'metal',0)));
+}
+for(let n=1;n<NPOST;n++){
+  const z = TENT.z0 + T_D*n/NPOST;
+  [TENT.x0,TENT.x1].forEach(x=>tentFrame.add(box(x,z,0.18,0.18,TENT.eave,'metal',0)));
+}
+// 檐口横梁（四周，中心 y5）
+tentFrame.add(box(0,TENT.z0,T_W,0.18,0.18,'metal',TENT.eave-0.09));
+tentFrame.add(box(0,TENT.z1,T_W,0.18,0.18,'metal',TENT.eave-0.09));
+tentFrame.add(box(TENT.x0,T_MIDZ,0.18,T_D,0.18,'metal',TENT.eave-0.09));
+tentFrame.add(box(TENT.x1,T_MIDZ,0.18,T_D,0.18,'metal',TENT.eave-0.09));
+// 屋脊梁（x0，中心 y8.9）
+tentFrame.add(box(0,T_MIDZ,0.2,T_D,0.2,'metal',TENT.ridge-0.1));
+// 坡顶斜梁（沿 z 每 3.1m 一榀，东西各一根）
+const RAF_LEN = Math.hypot(T_W/2,TENT.ridge-TENT.eave);
+const RAF_ANG = Math.atan2(TENT.ridge-TENT.eave,T_W/2);
+for(let n=0;n<=NPOST;n++){
+  const z = TENT.z0 + T_D*n/NPOST;
+  [-1,1].forEach(side=>{
+    const m = new THREE.Mesh(new THREE.BoxGeometry(RAF_LEN,0.14,0.14),getMat('metal'));
+    m.position.set(side*T_W/4,(TENT.eave+TENT.ridge)/2,z);
+    m.rotation.z = -side*RAF_ANG;
+    m.userData.mat='metal'; m.castShadow=true;
+    tentFrame.add(m);
+  });
+}
+// 篷布（独立材质，按钮切换 半透明/实体/隐藏，不参与材质模式切换）
+const tentMat = new THREE.MeshStandardMaterial({
+  color:0xf7f8fa, roughness:0.6, metalness:0,
+  transparent:true, opacity:0.35, side:THREE.DoubleSide,
+});
+function addCloth(m){ m.userData.tent=true; tentCloth.add(m); return m; }
+// 东西侧墙
+[[TENT.x0],[TENT.x1]].forEach(([x])=>{
+  const g=new THREE.PlaneGeometry(T_D,TENT.eave); g.rotateY(Math.PI/2);
+  addCloth(new THREE.Mesh(g,tentMat)).position.set(x,TENT.eave/2,T_MIDZ);
+});
+// 南北侧墙
+[TENT.z0,TENT.z1].forEach(z=>{
+  const m=new THREE.Mesh(new THREE.PlaneGeometry(T_W,TENT.eave),tentMat);
+  m.position.set(0,TENT.eave/2,z); addCloth(m);
+});
+// 两个坡面
+[-1,1].forEach(side=>{
+  const g=new THREE.PlaneGeometry(T_D,RAF_LEN); g.rotateY(Math.PI/2);
+  const m=new THREE.Mesh(g,tentMat);
+  m.position.set(side*T_W/4,(TENT.eave+TENT.ridge)/2,T_MIDZ);
+  m.rotation.z=-side*RAF_ANG; addCloth(m);
+});
+// 南北山墙三角
+[TENT.z0,TENT.z1].forEach(z=>{
+  const sh=new THREE.Shape();
+  sh.moveTo(-T_W/2,0); sh.lineTo(T_W/2,0); sh.lineTo(0,TENT.ridge-TENT.eave); sh.closePath();
+  const m=new THREE.Mesh(new THREE.ShapeGeometry(sh),tentMat);
+  m.position.set(0,TENT.eave,z); addCloth(m);
+});
+// 6 台 5 匹立式空调，靠篷房左侧等距排列
+for(let i=0;i<6;i++){
+  const z = 9.5 + (23-9.5)*(i+0.5)/6;
+  G.event.add(box(-7,z,0.6,0.6,1.9,'ac',0));
+  G.event.add(box(-7,z,0.5,0.5,0.12,'dark',1.9));
+}
+
+/* ===== 合影台 / 精神堡垒（横版 1m 高小型标识牌） ===== */
+G.event.add(extrude(D.photo_wall, 3.2, 'blue'));       // 合影背景墙
+const sp = D.spirit;
+const spCx = (sp[0][0]+sp[1][0])/2, spCz = (sp[0][1]+sp[1][1])/2;
+let sdx = sp[1][0]-sp[0][0], sdz = sp[1][1]-sp[0][1];
+const spLen = Math.hypot(sdx, sdz); sdx/=spLen; sdz/=spLen;
+const spGroup = new THREE.Group();
+spGroup.position.set(spCx, 0, spCz);
+spGroup.rotation.y = Math.atan2(-sdz, sdx);
+const spBoard = new THREE.Mesh(new THREE.BoxGeometry(3.5, 1, 0.25), getMat('dark'));
+spBoard.position.y = 1.05; spBoard.castShadow = true; spBoard.userData.mat = 'dark';
+[-1.4, 1.4].forEach(off => {
+  const post = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.55, 0.14), getMat('metal'));
+  post.position.set(off, 0.275, 0); post.castShadow = true; post.userData.mat = 'metal';
+  spGroup.add(post);
+});
+spGroup.add(spBoard);
+G.event.add(spGroup);
+
+/* ===== 展位 1-3：小轿车 + 半透明虚线展示区（去掉圆形装置） ===== */
+function makeCar(x, z){
+  const grp = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.BoxGeometry(1.8,0.65,4.1),getMat('car'));
+  body.position.y=0.6;body.userData.mat='car';body.castShadow=true;grp.add(body);
+  const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.55,0.6,2.2),getMat('car'));
+  cabin.position.set(0,1.15,-0.2);cabin.userData.mat='car';cabin.castShadow=true;grp.add(cabin);
+  const win = new THREE.Mesh(new THREE.BoxGeometry(1.57,0.42,2.0),getMat('glass'));
+  win.position.set(0,1.18,-0.2);win.userData.mat='glass';grp.add(win);
+  const wg = new THREE.CylinderGeometry(0.33,0.33,0.25,14); wg.rotateZ(Math.PI/2);
+  [[-0.85,1.3],[0.85,1.3],[-0.85,-1.3],[0.85,-1.3]].forEach(([wx,wz])=>{
+    const w=new THREE.Mesh(wg,getMat('dark'));w.position.set(wx,0.33,wz);w.userData.mat='dark';grp.add(w);
+  });
+  grp.position.set(x,0,z);
+  return grp;
+}
+function dashedArea(x,z,sx,sz){
+  const pts=[[x-sx/2,z-sz/2],[x+sx/2,z-sz/2],[x+sx/2,z+sz/2],[x-sx/2,z+sz/2],[x-sx/2,z-sz/2]];
+  const geo=new THREE.BufferGeometry().setFromPoints(pts.map(p=>new THREE.Vector3(p[0],0.09,p[1])));
+  const line=new THREE.Line(geo,new THREE.LineDashedMaterial({color:0x2f56c0,dashSize:0.4,gapSize:0.25}));
+  line.computeLineDistances();
+  return line;
+}
+D.booths.forEach(b=>{
+  G.event.add(makeCar(b.x,b.z));
+  G.event.add(dashedArea(b.x,b.z,4.2,4.8));
+});
+// 展位平台（8 个铺装）
+D.booth_platforms.forEach(p => G.event.add(flatShape(p, 'wood', 0.025)));
+// 斜向停车区（12 个车位，地面材质）
+D.parking.forEach(p => scene.add(flatShape(p, 'ground', 0.045)));
+// 统一白色车位线（展位区 + 斜向停车区）
+function whiteLine(cx,cz,sx,sz){
+  const m=new THREE.Mesh(new THREE.BoxGeometry(sx,0.03,sz),getMat('mark'));
+  m.position.set(cx,0.06,cz);m.userData.mat='mark';G.event.add(m);
+}
+D.booths.forEach(b=>{
+  whiteLine(b.x,b.z-2.4,4.2,0.08); whiteLine(b.x,b.z+2.4,4.2,0.08);
+  whiteLine(b.x-2.1,b.z,0.08,4.8); whiteLine(b.x+2.1,b.z,0.08,4.8);
+});
+D.parking.forEach(p=>{
+  const cx=p.reduce((s,q)=>s+q[0],0)/p.length, cz=p.reduce((s,q)=>s+q[1],0)/p.length;
+  whiteLine(cx,cz,0.08,2.4);
+});
+
+/* ===== 打卡点（2 个圆） ===== */
+D.checkin.forEach(c => {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(c.d / 2, c.d / 2, 0.15, 26), getMat('green'));
+  m.position.set(c.x, 0.08, c.z); m.userData.mat = 'green';
+  G.event.add(m);
+});
+
+/* ===== 铁艺镂空栅栏（沿场地红线围合 E1 院子，高 2m；西界道闸、东界栅栏门） ===== */
+const fenceGroup = new THREE.Group();
+G.buildings.add(fenceGroup);
+// 完整边界顶点（闭合），西界为 P2→P3，东界为 P6→P0
+const P0=[20.37,-22.14],P1=[-25.76,-22.14],P2=[-33.81,-9.24],P3=[-33.81,18.86],
+      P4=[-18.78,18.86],P5=[10.22,36.84],P6=[20.37,42.65];
+// 沿一条边（p1→p2）在局部参数区间 [t0,t1] 内布置栅栏
+function fenceRun(p1,p2,t0,t1){
+  const dx=p2[0]-p1[0],dz=p2[1]-p1[1],len=Math.hypot(dx,dz),run=t1-t0;
+  const grp=new THREE.Group();
+  grp.position.set(p1[0],0,p1[1]); grp.rotation.y=-Math.atan2(dz,dx);
+  // 端点立柱（开口两侧门柱）
+  [t0,t1].forEach(t=>{
+    const post=new THREE.Mesh(new THREE.BoxGeometry(0.14,2,0.14),getMat('fence'));
+    post.position.set(t,1,0);post.userData.mat='fence';post.castShadow=true;grp.add(post);
+  });
+  // 中间立柱（每 2.5m）
+  for(let t=t0+2.5;t<t1-0.1;t+=2.5){
+    const post=new THREE.Mesh(new THREE.BoxGeometry(0.1,2,0.1),getMat('fence'));
+    post.position.set(t,1,0);post.userData.mat='fence';grp.add(post);
+  }
+  // 上下两道横杆
+  [0.4,1.8].forEach(y=>{
+    const rail=new THREE.Mesh(new THREE.BoxGeometry(run,0.08,0.08),getMat('fence'));
+    rail.position.set(t0+run/2,y,0);rail.userData.mat='fence';grp.add(rail);
+  });
+  // 镂空装饰竖杆（每 0.8m）
+  for(let t=t0+0.4;t<t1;t+=0.8){
+    const bar=new THREE.Mesh(new THREE.BoxGeometry(0.04,1.4,0.04),getMat('fence'));
+    bar.position.set(t,1.1,0);bar.userData.mat='fence';grp.add(bar);
+  }
+  fenceGroup.add(grp);
+}
+// 各段（西界道闸、东界栅栏门处拆成两段）
+fenceRun(P0,P1,0,Math.hypot(P1[0]-P0[0],P1[1]-P0[1]));
+fenceRun(P1,P2,0,Math.hypot(P2[0]-P1[0],P2[1]-P1[1]));
+const W_LEN=P3[1]-P2[1];
+fenceRun(P2,P3,0,9.03-P2[1]);              // 西界道闸北
+fenceRun(P2,P3,13.64-P2[1],W_LEN);         // 西界道闸南
+fenceRun(P3,P4,0,Math.hypot(P4[0]-P3[0],P4[1]-P3[1]));
+fenceRun(P4,P5,0,Math.hypot(P5[0]-P4[0],P5[1]-P4[1]));
+fenceRun(P5,P6,0,Math.hypot(P6[0]-P5[0],P6[1]-P5[1]));
+const E_LEN=P6[1]-P0[1];
+fenceRun(P6,P0,0,P6[1]-5.71);              // 东界栅栏门南
+fenceRun(P6,P0,P6[1]-2.48,E_LEN);          // 东界栅栏门北
+
+/* —— 西界停车道闸（开口 x-33.81、z9.03~13.64） —— */
+const BARRIER = new THREE.Group();
+fenceGroup.add(BARRIER);
+[9.03,13.64].forEach(z=>{
+  const cab=box(-33.81,z,0.5,0.5,1.2,'dark',0); BARRIER.add(cab);
+});
+const bArm=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.1,4.4),getMat('orange'));
+bArm.position.set(-33.81,1.0,11.335);bArm.userData.mat='orange';bArm.castShadow=true;
+BARRIER.add(bArm);
+for(let z=9.6;z<13.4;z+=0.9){
+  const seg=new THREE.Mesh(new THREE.BoxGeometry(0.12,0.12,0.4),getMat('mark'));
+  seg.position.set(-33.81,1.0,z);seg.userData.mat='mark';BARRIER.add(seg);
+}
+
+/* —— 东界铁艺栅栏门（开口 x20.37、z2.48~5.71，两扇对开、向内开启） —— */
+const GATE = new THREE.Group();
+fenceGroup.add(GATE);
+[2.48,5.71].forEach(z=>GATE.add(box(20.37,z,0.16,0.16,2,'fence',0)));
+[2.48,5.71].forEach((z,i)=>{
+  const leaf=new THREE.Group();
+  leaf.position.set(20.37,0,z);
+  const dir=i===0?1:-1;
+  // 门框：两侧立柱 + 上下横杆
+  const post0=new THREE.Mesh(new THREE.BoxGeometry(0.08,1.9,0.08),getMat('fence'));
+  post0.position.y=0.95;post0.userData.mat='fence';leaf.add(post0);
+  const post1=new THREE.Mesh(new THREE.BoxGeometry(0.08,1.9,0.08),getMat('fence'));
+  post1.position.set(0,0.95,dir*1.5);post1.userData.mat='fence';leaf.add(post1);
+  [0.15,1.75].forEach(y=>{
+    const rail=new THREE.Mesh(new THREE.BoxGeometry(0.08,0.08,1.5),getMat('fence'));
+    rail.position.set(0,y,dir*0.75);rail.userData.mat='fence';leaf.add(rail);
+  });
+  // 中间镂空竖杆（4 根）
+  for(let k=1;k<5;k++){
+    const bar=new THREE.Mesh(new THREE.BoxGeometry(0.045,1.5,0.045),getMat('fence'));
+    bar.position.set(0,0.95,dir*1.5*k/5);bar.userData.mat='fence';leaf.add(bar);
+  }
+  leaf.rotation.y = i===0? -0.7 : 0.7;   // 向内（西侧）开启约 40°
+  GATE.add(leaf);
+});
+
+/* ===== 道旗（35 个） ===== */
+function makeFlag(x, z) {
+  const grp = new THREE.Group();
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 5, 8), getMat('metal'));
+  pole.position.y = 2.5; pole.userData.mat = 'metal';
+  const flag = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.55), getMat('blue'));
+  flag.position.set(0.45, 4.6, 0); flag.userData.mat = 'blue';
+  grp.add(pole, flag);
+  grp.position.set(x, 0, z);
+  return grp;
+}
+D.flags.forEach(f => G.flags.add(makeFlag(f[0], f[1])));
+
+/* ===== 文字标签 ===== */
+makeLabel('E1栋 · 研发主楼（3层 15.85m）', 0, -8, 16.6, 'big');
+makeLabel('F1栋（6层 24m）', 43, 1, 25, 'big');
+makeLabel('新楼正门', 0, -1.2, 5.5);
+makeLabel('揭幕仪式区', 0, 5, 3.5);
+makeLabel('舞台区', 0, 11, 2.6);
+makeLabel('LED 主屏 8×4 + 副屏 2.5×4', 0, 8.2, 4.6);
+makeLabel('15m 尖顶篷房', 0, 16.2, 9.4);
+makeLabel('茶水间', -20, -6.5, 5);
+makeLabel('合影背景台', -14, 3, 4);
+makeLabel('VISTEON', spCx, spCz, 1.7, 'org');
+makeLabel('展位①', 16.9, 10.3, 3.2, 'org');
+makeLabel('展位②', 16.9, 17.4, 3.2, 'org');
+makeLabel('展位③', 16.9, 24.5, 3.2, 'org');
+makeLabel('打卡点', -22, 0.3, 2.6);
+makeLabel('打卡点', -10, 6.5, 2.6);
+/* ===== 光照：主光 + 半球环境 + 天空补光 ===== */
+scene.add(new THREE.HemisphereLight(0xffffff, 0xc8cfdb, 0.85));
+const sun = new THREE.DirectionalLight(0xffffff, 2.0);
+sun.position.set(45, 70, 30);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.left = -85; sun.shadow.camera.right = 85;
+sun.shadow.camera.top = 85; sun.shadow.camera.bottom = -85;
+sun.shadow.camera.near = 1; sun.shadow.camera.far = 220;
+sun.shadow.bias = -0.0004;
+scene.add(sun);
+const fill = new THREE.DirectionalLight(0xdce6ff, 0.5);
+fill.position.set(-40, 30, -30);
+scene.add(fill);
+
+/* ===== 视角预设（带过渡） ===== */
+const VIEWS = {
+  overview: { pos: [48, 62, 88], tgt: [6, 0, 12] },
+  gate: { pos: [-13, 11, 22], tgt: [0, 4.5, -2] },
+  stage: { pos: [-2, 9, 30], tgt: [0, 3, 8] },
+  photo: { pos: [-32, 8, 11], tgt: [-15, 3, 3] },
+  booth: { pos: [34, 12, 20], tgt: [17, 2, 17] },
+};
+let moving = false;
+const targetPos = new THREE.Vector3(), targetTgt = new THREE.Vector3();
+document.querySelectorAll('.vbtn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (!btn.dataset.view) return;   // 篷布按钮复用 vbtn 样式但不是视角按钮
+    document.querySelectorAll('.vbtn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const v = VIEWS[btn.dataset.view];
+    targetPos.set(...v.pos); targetTgt.set(...v.tgt);
+    moving = true;
+  });
+});
+
+/* ===== 图层开关 ===== */
+document.querySelectorAll('[data-layer]').forEach(cb => {
+  cb.addEventListener('change', () => {
+    const k = cb.dataset.layer;
+    if (k === 'labels') G.labels.visible = cb.checked;
+    else G[k].visible = cb.checked;
+  });
+});
+
+/* ===== 材质模式切换 ===== */
+function applyMode() {
+  scene.traverse(o => {
+    if (o.isMesh || o.isInstancedMesh) {
+      const k = o.userData.mat;
+      if (k && MAT[mode][k]) o.material = MAT[mode][k];
+    }
+  });
+}
+function bindMode(id, m) {
+  document.getElementById(id).addEventListener('click', () => {
+    mode = m;
+    document.getElementById('modeWhite').classList.toggle('on', m === 'white');
+    document.getElementById('modeColor').classList.toggle('on', m === 'color');
+    applyMode();
+  });
+}
+bindMode('modeWhite', 'white');
+bindMode('modeColor', 'color');
+
+/* ===== 篷布切换（半透明 → 实体白色 → 隐藏 → 半透明） ===== */
+const TENT_STATES=[
+  {label:'篷布：半透明',opacity:0.35,visible:true},
+  {label:'篷布：实体白色',opacity:1,visible:true},
+  {label:'篷布：隐藏',opacity:1,visible:false},
+];
+let tentState=0;
+const tentBtn=document.getElementById('tentBtn');
+tentBtn.addEventListener('click',()=>{
+  tentState=(tentState+1)%TENT_STATES.length;
+  const s=TENT_STATES[tentState];
+  tentCloth.visible=s.visible; tentMat.opacity=s.opacity;
+  tentBtn.textContent=s.label;
+});
+
+/* ===== 自适应 ===== */
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+  labelRenderer.setSize(innerWidth, innerHeight);
+});
+
+/* ===== 渲染循环（切后台暂停） ===== */
+let running = true;
+document.addEventListener('visibilitychange', () => {
+  const wasHidden = document.hidden;
+  running = !wasHidden;
+  if (running) loop();
+});
+function loop() {
+  if (!running) return;
+  requestAnimationFrame(loop);
+  if (moving) {
+    camera.position.lerp(targetPos, 0.09);
+    controls.target.lerp(targetTgt, 0.09);
+    if (camera.position.distanceTo(targetPos) < 0.3 &&
+        controls.target.distanceTo(targetTgt) < 0.3) moving = false;
+  }
+  controls.update();
+  renderer.render(scene, camera);
+  labelRenderer.render(scene, camera);
+}
+loop();
+document.getElementById('loading').style.display = 'none';
+</script>
+</body>
+</html>
