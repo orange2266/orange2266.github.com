@@ -126,6 +126,7 @@
     <h2>篷房篷布 / LED 开合</h2>
     <button id="tentBtn" class="vbtn" style="text-align:center">篷布：半透明</button>
     <button id="ledBtn" class="vbtn" style="text-align:center">打开开合屏</button>
+    <button id="eaveBtn" class="vbtn" style="text-align:center">挑檐顶：实体</button>
 
     <h2>文字标签编辑</h2>
     <div id="labelList" style="display:flex;flex-direction:column;gap:6px"></div>
@@ -146,6 +147,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 const MODEL_DATA = {"scale":"1单位=1米，原点=新楼正门中心，X向东，Z向南","buildings":[{"name":"F1上栋","h":24.0,"footprint":[[29.42,-7.125],[57.789,-7.125],[57.789,9.646],[29.42,9.646]]},{"name":"E1栋","h":24.0,"footprint":[[-7.961,-14.599],[7.963,-14.599],[7.963,8.479],[-7.961,8.479]]},{"name":"茶水间","h":4.0,"footprint":[[-28.531,-10.672],[-11.893,-10.672],[-11.893,-2.619],[-28.531,-2.619]]},{"name":"E1栋","h":24.0,"footprint":[[7.963,-18.477],[14.888,-18.477],[14.888,0.001],[7.963,0.001]]},{"name":"E1栋","h":24.0,"footprint":[[-11.893,-20.81],[0.031,-20.81],[0.031,-0.007],[-11.893,-0.007]]}],"green_land":[{"name":"扇形绿地","points":[[-7.96,-2.619],[-7.96,8.479],[-8.44,8.52],[-8.951,8.555],[-9.49,8.58],[-10.058,8.595],[-10.651,8.597],[-11.269,8.585],[-11.908,8.555],[-12.569,8.508],[-13.248,8.44],[-13.945,8.349],[-14.657,8.234],[-15.383,8.093],[-16.121,7.924],[-16.87,7.724],[-17.627,7.493],[-18.391,7.227],[-19.161,6.926],[-19.934,6.586],[-20.133,6.493],[-20.344,6.394],[-20.566,6.287],[-20.798,6.172],[-21.04,6.049],[-21.291,5.916],[-21.55,5.773],[-21.817,5.62],[-22.092,5.455],[-22.372,5.279],[-22.658,5.089],[-22.949,4.887],[-23.245,4.671],[-23.544,4.441],[-23.846,4.195],[-24.151,3.934],[-24.458,3.656],[-24.765,3.361],[-25.125,2.994],[-25.464,2.625],[-25.782,2.255],[-26.081,1.884],[-26.36,1.515],[-26.621,1.148],[-26.863,0.785],[-27.089,0.427],[-27.298,0.075],[-27.49,-0.27],[-27.668,-0.606],[-27.83,-0.933],[-27.979,-1.248],[-28.113,-1.552],[-28.235,-1.842],[-28.345,-2.117],[-28.444,-2.376],[-28.531,-2.619],[-7.96,-2.619]]},{"name":"入口绿地","points":[[-18.779,18.859],[-33.811,18.859],[-33.756,14.979],[-16.054,14.466],[-18.779,18.859]]},{"name":"东南绿地","points":[[10.219,36.844],[20.371,42.651],[20.371,29.159],[16.235,29.159],[12.944,32.45],[10.219,36.844]]}],"plant_walls":[[[5.171,0.148],[7.963,8.477]],[[5.52,0.439],[7.481,7.96]],[[-7.961,0.148],[-5.169,8.477]],[[-7.48,0.439],[-5.518,7.96]]],"checkin":[{"x":-22.141,"z":0.311,"d":1.94},{"x":-12.8,"z":6.479,"d":1.94}],"booths":[{"x":16.923,"z":10.256,"d":5.17},{"x":16.923,"z":17.366,"d":5.17},{"x":16.923,"z":24.476,"d":5.17}],"spirit":[[-17.45,6.971],[-22.141,4.378],[-21.669,3.524],[-16.978,6.117],[-17.45,6.971]],"photo_wall":[[-11.845,4.661],[-17.909,1.557],[-16.919,-0.376],[-10.855,2.727],[-11.845,4.661]],"flags":[[-25.602,-22.14],[-17.94,-22.14],[-10.278,-22.14],[-2.616,-22.14],[5.047,-22.14],[12.709,-22.14],[20.371,-22.14],[-32.788,-22.14],[-24.0,4.089],[-16.625,7.96],[-10.254,8.69],[-10.254,14.366],[-10.254,18.633],[-10.254,23.004],[9.411,8.479],[20.371,-14.478],[-32.788,-15.703],[-35.098,-7.873],[-38.701,-2.654],[-42.262,2.442],[20.371,-6.815],[20.371,0.847],[20.371,7.546],[9.411,14.366],[9.411,18.633],[9.411,23.004],[9.411,27.103],[4.706,27.103],[0.001,27.103],[-28.634,-2.055],[-32.579,14.406],[-28.837,14.319],[-25.096,14.232],[-21.355,14.144],[-17.613,14.057]],"stage":[[-6.203,8.75],[6.205,8.75],[6.205,13.92],[-6.203,13.92]],"seats":[[-5.749,16.542],[-4.922,16.542],[-4.095,16.542],[-3.268,16.542],[-2.44,16.542],[-1.613,16.542],[0.789,16.542],[1.616,16.542],[2.443,16.542],[3.27,16.542],[4.098,16.542],[4.925,16.542],[-5.749,17.975],[-4.922,17.975],[-4.095,17.975],[-3.268,17.975],[-2.44,17.975],[-1.613,17.975],[0.789,17.975],[1.616,17.975],[2.443,17.975],[3.27,17.975],[4.098,17.975],[4.925,17.975],[-5.749,19.408],[-4.922,19.408],[-4.095,19.408],[-3.268,19.408],[-2.44,19.408],[-1.613,19.408],[0.789,19.408],[1.616,19.408],[2.443,19.408],[3.27,19.408],[4.098,19.408],[4.925,19.408],[-5.749,20.841],[-4.922,20.841],[-4.095,20.841],[-3.268,20.841],[-2.44,20.841],[-1.613,20.841],[0.789,20.841],[1.616,20.841],[2.443,20.841],[3.27,20.841],[4.098,20.841],[4.925,20.841]],"parking":[[[5.634,27.917],[2.909,32.31],[0.713,30.948],[3.438,26.554],[5.634,27.917]],[[8.071,29.428],[5.346,33.822],[3.149,32.459],[5.874,28.065],[8.071,29.428]],[[10.507,30.939],[7.782,35.333],[5.586,33.97],[8.311,29.577],[10.507,30.939]],[[12.944,32.45],[10.219,36.844],[8.022,35.481],[10.747,31.088],[12.944,32.45]],[[-4.112,21.872],[-6.836,26.266],[-9.033,24.904],[-6.308,20.51],[-4.112,21.872]],[[-1.675,23.384],[-4.4,27.777],[-6.597,26.415],[-3.872,22.021],[-1.675,23.384]],[[0.761,24.895],[-1.963,29.288],[-4.16,27.926],[-1.435,23.532],[0.761,24.895]],[[3.198,26.406],[0.473,30.799],[-1.724,29.437],[1.001,25.043],[3.198,26.406]],[[-13.857,15.828],[-16.582,20.222],[-18.779,18.859],[-16.054,14.466],[-13.857,15.828]],[[-11.421,17.339],[-14.146,21.733],[-16.343,20.37],[-13.618,15.977],[-11.421,17.339]],[[-8.984,18.85],[-11.709,23.244],[-13.906,21.882],[-11.181,17.488],[-8.984,18.85]],[[-6.548,20.361],[-9.273,24.755],[-11.47,23.393],[-8.745,18.999],[-6.548,20.361]]],"booth_platforms":[[[16.235,5.894],[20.371,5.894],[20.371,8.479],[16.235,8.479]],[[16.235,8.848],[20.371,8.848],[20.371,11.433],[16.235,11.433]],[[16.235,11.803],[20.371,11.803],[20.371,14.388],[16.235,14.388]],[[16.235,14.757],[20.371,14.757],[20.371,17.342],[16.235,17.342]],[[16.235,17.711],[20.371,17.711],[20.371,20.296],[16.235,20.296]],[[16.235,20.666],[20.371,20.666],[20.371,23.251],[16.235,23.251]],[[16.235,23.62],[20.371,23.62],[20.371,26.205],[16.235,26.205]],[[16.235,26.574],[20.371,26.574],[20.371,29.159],[16.235,29.159]]],"gate_pillars":[[[-34.553,9.027],[-33.564,9.027],[-33.564,13.643],[-34.553,13.643]],[[20.025,2.477],[20.718,2.477],[20.718,5.712],[20.025,5.712]],[[-17.041,-8.263],[-16.347,-8.263],[-16.347,-5.028],[-17.041,-5.028]],[[-16.694,-8.263],[-16.694,-8.263],[-16.694,-5.028],[-16.694,-5.028]]],"door_headers":[[[-4.383,-0.309],[4.386,-0.309],[4.386,0.311],[-4.383,0.311]],[[-25.177,-11.019],[-20.407,-11.019],[-20.407,-10.325],[-25.177,-10.325]],[[-25.177,-10.672],[-20.407,-10.672],[-20.407,-10.672],[-25.177,-10.672]]],"e1_outline":[[7.963,-18.476],[7.963,-14.598],[0.029,-14.598],[0.029,-20.81],[-11.892,-20.81],[-11.892,-10.673],[-28.529,-10.673],[-28.529,-2.619],[-11.892,-2.619],[-11.892,-0.007],[-7.959,-0.007],[-7.959,8.477],[7.963,8.477],[7.963,0.0],[14.886,0.0],[14.886,-18.476]],"f1_plots":[[[27.143,-24.181],[60.067,-24.181],[60.067,13.975],[27.143,13.975]],[[27.143,20.566],[60.067,20.566],[60.067,42.106],[27.143,42.106]]]};
 const D = MODEL_DATA;
@@ -165,6 +167,9 @@ app.appendChild(renderer.domElement);
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xeef1f6);
 scene.fog = new THREE.Fog(0xeef1f6, 140, 280);
+// 程序化环境贴图（PMREM）：为金属提供 IBL 反射，使银色镀锌龙骨/构架真实显色，避免高金属度在无环境时发黑
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 
 const camera = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, 0.1, 1000);
 camera.position.set(48, 62, 88);
@@ -186,8 +191,10 @@ controls.maxDistance = 175;
 controls.maxTargetRadius = 120;
 
 /* ===== 材质（白模 / 功能配色两套） ===== */
-function std(color, rough = 0.7, metal = 0) {
-  return new THREE.MeshStandardMaterial({ color, roughness: rough, metalness: metal });
+function std(color, rough = 0.7, metal = 0, envInt = 1) {
+  const m = new THREE.MeshStandardMaterial({ color, roughness: rough, metalness: metal });
+  m.envMapIntensity = envInt;
+  return m;
 }
 // 玻璃幕墙（物理材质，半透明 + 清漆反射）
 function glassMaterial(color, opacity) {
@@ -208,9 +215,10 @@ const MAT = {
     building: std(0xf4f5f8, 0.65), ground: std(0xe7eaF0, 0.95), road: std(0xd6dae2, 0.92),
     green: std(0xe9ece6, 0.9), stage: std(0xe0e2e7, 0.85), wood: std(0xefede7, 0.8),
     blue: std(0xf2f4fa, 0.7), orange: std(0xf5f2ed, 0.7), dark: std(0x3a3f4a, 0.6),
-    metal: std(0xdbe0e6, 0.22, 0.95),
+    metal: std(0xe2e8ef, 0.3, 0.5, 1.2),
     panel: std(0xe9ecf1, 0.5, 0.3),
     glass: glassMaterial(0xd2dae6, 0.4),
+    backglass: glassMaterial(0xd3d9e1, 0.9),
     led: ledMaterial(0x8b93a2, 0x000000),
     sofa: std(0xf2f3f6, 0.6), fence: std(0x9aa0ab, 0.45, 0.7),
     ac: std(0xe8eaee, 0.55), car: std(0xc6ccd6, 0.45, 0.5), mark: std(0xffffff, 0.6),
@@ -219,9 +227,10 @@ const MAT = {
     building: std(0xe9ecf2, 0.6), ground: std(0xdfe3ea, 0.95), road: std(0x99a1b0, 0.95),
     green: std(0x7fae6a, 0.9), stage: std(0x6f747f, 0.85), wood: std(0xb98d5a, 0.7),
     blue: std(0x2f56c0, 0.55), orange: std(0xf08a2e, 0.6), dark: std(0x2a2f3a, 0.5),
-    metal: std(0xd4dae1, 0.2, 0.95),
+    metal: std(0xd8dee6, 0.3, 0.5, 1.2),
     panel: std(0xb6bdc9, 0.4, 0.55),
     glass: glassMaterial(0x2c3d5c, 0.45),
+    backglass: glassMaterial(0x1c2a45, 0.88),
     led: ledMaterial(0x0d1220, 0x15407f),
     sofa: std(0xf6f7f9, 0.55), fence: std(0x2f343d, 0.4, 0.75),
     ac: std(0xf2f4f7, 0.5), car: std(0x2f56c0, 0.4, 0.55), mark: std(0xffffff, 0.55),
@@ -318,41 +327,63 @@ scene.add(flatRect(-1, 26, 38, 7.5, -31.8, 'road', 0.006));
 // 芙蓉路（南侧斜向主干道）
 scene.add(flatRect(8, 47, 110, 13, -31.8, 'road', 0.004));
 
-/* ===== E1 研发主楼（2 层：首层玻璃 + 二层铝板，平顶即天台，总高 15.85m） ===== */
+/* ===== E1 研发主楼（2 层：首层玻璃 + 二层铝板，平顶，总高 10.2m） ===== */
 const E1_BLOCKS = [
   [[-7.96,-14.6],[7.96,-14.6],[7.96,0],[-7.96,0]],      // 中央体块
   [[7.96,-18.48],[14.89,-18.48],[14.89,0],[7.96,0]],     // 东翼
   [[-11.89,-20.81],[0.03,-20.81],[0.03,0],[-11.89,0]],   // 西翼
 ];
-const E1_H = 15.85, H1 = 5.0, H2 = E1_H - H1;   // 首层玻璃 5m，二层铝板 10.85m，平顶 15.85m
-E1_BLOCKS.forEach(blk => {
-  G.buildings.add(extrude(blk, H1, 'glass', 0));
-  G.buildings.add(extrude(blk, H2, 'panel', H1));
+const E1_H = 10.2, H1 = 5.0, H2 = E1_H - H1;   // E1 顶部 10.2m；东西翼首层 5m、二层 5~10.2
+const MID_LOW = 4.15;   // 门廊楼板顶面/上层 baseY（挑檐底板 4m）
+E1_BLOCKS.forEach((blk,i) => {
+  if (i === 0) {
+    // 中央主楼：首层 0~4.15 玻璃，二层 4.15~10.2 整块 panel（不内凹）
+    G.buildings.add(extrude(blk, MID_LOW, 'glass', 0));
+    G.buildings.add(extrude(blk, E1_H - MID_LOW, 'panel', MID_LOW));
+  } else {
+    G.buildings.add(extrude(blk, H1, 'glass', 0));
+    G.buildings.add(extrude(blk, H2, 'panel', H1));   // 东西翼首层 5m、二层到 10.2
+  }
 });
+/* ===== 正门门廊（挑檐）：宽 15.4、深 8.2、高 10.2，分两层；下层 0~4 挑空（揭幕仪式区），上层内凹阳台（半透明） ===== */
+const EAVE_W = 15.4, EAVE_HALF = EAVE_W / 2, EAVE_D = 8.2;
+// 门廊楼板（挑檐底板，专用材质，可在实体/半透明/隐藏间切换，便于看见下层舞狮仪式）
+const eaveMat = new THREE.MeshStandardMaterial({ color: 0xb6bdc9, roughness: 0.45, metalness: 0.4 });
+const eaveRoof = new THREE.Mesh(new THREE.BoxGeometry(EAVE_W, 0.3, EAVE_D), eaveMat);
+eaveRoof.position.set(0, 4.0, EAVE_D / 2); eaveRoof.castShadow = true; eaveRoof.receiveShadow = true;
+G.buildings.add(eaveRoof);
+// 下层挑空两侧玻璃墙（y0~4，z0~8.2）
+G.buildings.add(box(-EAVE_HALF, EAVE_D / 2, 0.12, EAVE_D, 4, 'glass', 0));
+G.buildings.add(box(EAVE_HALF, EAVE_D / 2, 0.12, EAVE_D, 4, 'glass', 0));
 
-/* ===== 正门挑檐（底板高 4m，宽 15.4m 与一楼花坛同宽，深 8.2m 并延伸至 LED 封闭；上方做平、无楼体） ===== */
-const EAVE_W = 15.4, EAVE_HALF = EAVE_W / 2;
-// 雨棚底板：南缘延伸至 LED（z9.4）以封闭下方空间
-G.buildings.add(box(0, 4.7, EAVE_W, 9.4, 0.3, 'panel', 3.85));
-// 挑檐下方封闭空间两侧玻璃侧墙（y0~4，z0~9.4）
-G.buildings.add(box(-EAVE_HALF, 4.7, 0.12, 9.4, 4, 'glass', 0));
-G.buildings.add(box(EAVE_HALF, 4.7, 0.12, 9.4, 4, 'glass', 0));
+/* ===== 门廊二层：内凹阳台（凹口 x±5.5、南侧 z8.2 后退到 z6.4，深 1.8）；整体半透明，可随挑檐开关一起隐藏 ===== */
+const eaveUpperGroup = new THREE.Group();
+G.buildings.add(eaveUpperGroup);
+const eaveUpperMat = new THREE.MeshStandardMaterial({ color: 0xb6bdc9, roughness: 0.45, metalness: 0.4, transparent: true, opacity: 0.5 });
+// 内凹实体（前墩 + 后部，半透明铝板）
+const EAVE_UP_FP = [[-7.7,0],[7.7,0],[7.7,8.2],[5.5,8.2],[5.5,6.4],[-5.5,6.4],[-5.5,8.2],[-7.7,8.2]];
+const upMesh = extrude(EAVE_UP_FP, E1_H - MID_LOW, 'panel', MID_LOW);
+upMesh.material = eaveUpperMat;
+eaveUpperGroup.add(upMesh);
+// 凹口后墙（深色玻璃，z6.4，y4.15~10.2）+ 压顶
+eaveUpperGroup.add(box(0, 6.4, 11.0, 0.06, 6.05, 'backglass', MID_LOW));
+eaveUpperGroup.add(box(0, 6.4, 11.0, 0.12, 0.3, 'panel', 9.9));
+// 凹口护栏（z8.0，从 4.15 立起）：玻璃栏板 + 银色扶手/底轨 + 立柱
+eaveUpperGroup.add(box(0, 8.0, 11, 0.04, 1.05, 'glass', MID_LOW));
+eaveUpperGroup.add(box(0, 8.0, 11, 0.08, 0.08, 'metal', 5.2));
+eaveUpperGroup.add(box(0, 8.0, 11, 0.06, 0.05, 'metal', MID_LOW));
+[-5.5,-2.75,0,2.75,5.5].forEach(px =>
+  eaveUpperGroup.add(box(px, 8.0, 0.05, 0.05, 1.05, 'metal', MID_LOW)));
 
-/* ===== 屋顶钢结构构架（高出屋面，采光顶，15.85~18.95m） ===== */
-const FR = { x0:-5, x1:5, z0:-12.5, z1:-6.5, base:15.85, top:18.95 };
-[FR.x0, FR.x1].forEach(px => [FR.z0, FR.z1].forEach(pz =>
-  G.buildings.add(box(px, pz, 0.28, 0.28, FR.top-FR.base, 'metal', FR.base))));
-G.buildings.add(box(0, FR.z0, 10, 0.26, 0.26, 'metal', FR.top-0.13));
-G.buildings.add(box(0, FR.z1, 10, 0.26, 0.26, 'metal', FR.top-0.13));
-G.buildings.add(box(FR.x0, -9.5, 0.26, 6, 0.26, 'metal', FR.top-0.13));
-G.buildings.add(box(FR.x1, -9.5, 0.26, 6, 0.26, 'metal', FR.top-0.13));
-G.buildings.add(box(0, -9.5, 10, 6, 0.12, 'glass', FR.top));   // 采光顶板
+/* 屋顶钢结构构架已随总高调整为 10.2m 而移除（原构架 base 15.85 会悬空） */
 
 /* ===== 立面小窗（深色，嵌于铝板） ===== */
-[[-6.5],[6.5],[10],[12.5],[-10.5],[-9]].forEach(([px]) =>
-  G.buildings.add(box(px, 0.07, 1.5, 0.12, 1.3, 'dark', 6.8)));  // 二层
-[[-6],[0],[6]].forEach(([px]) =>
-  G.buildings.add(box(px, 0.07, 1.5, 0.12, 1.3, 'dark', 12.2))); // 二层高窗
+// 门廊上层南墙（z8.2，窗贴墙面微凸）
+[[-6.5],[6.5]].forEach(([px]) =>
+  G.buildings.add(box(px, 8.2, 1.5, 0.12, 1.3, 'dark', 6.8)));
+// 东西翼南墙（z0，窗贴墙面微凸）
+[[10],[12.5],[-10.5],[-9]].forEach(([px]) =>
+  G.buildings.add(box(px, 0, 1.5, 0.12, 1.3, 'dark', 6.8)));  // 二层 y6.8~8.1
 
 /* ===== 茶水间（4m 单层） / F1 上栋（6 层 24m） ===== */
 G.buildings.add(extrude(D.buildings.find(b => b.name === '茶水间').footprint, 4, 'building'));
@@ -415,15 +446,21 @@ G.event.add(wordGroup);
 new FontLoader().load(
   'https://fastly.jsdelivr.net/npm/three@0.160.0/examples/fonts/helvetiker_bold.typeface.json',
   font => {
-    const geo=new TextGeometry('VISTEON',{font,size:0.72,height:0.14,curveSegments:6,
-      bevelEnabled:true,bevelThickness:0.02,bevelSize:0.02,bevelSegments:2});
-    geo.computeBoundingBox();
-    const b=geo.boundingBox;
-    geo.translate(-(b.min.x+b.max.x)/2,-(b.min.y+b.max.y)/2,0);  // 水平居中
-    geo.rotateX(-Math.PI/2);   // 平躺：字面朝上、厚度沿法线
-    const m=new THREE.Mesh(geo,getMat('orange'));
-    m.position.y=0.08; m.userData.mat='orange'; m.castShadow=true;
-    wordGroup.add(m);
+    const SIZE=0.58, TRACK=0.16;   // 字号缩小（原 0.72），额外字距加大，自然美观
+    const parts=[]; let cursor=0;
+    'VISTEON'.split('').forEach(ch=>{
+      const g=new TextGeometry(ch,{font,size:SIZE,height:0.14,curveSegments:6,
+        bevelEnabled:true,bevelThickness:0.02,bevelSize:0.02,bevelSegments:2});
+      g.computeBoundingBox();
+      const w=g.boundingBox.max.x-g.boundingBox.min.x;
+      g.translate(-g.boundingBox.min.x,-(g.boundingBox.min.y+g.boundingBox.max.y)/2,0);  // 左对齐、竖直居中
+      g.rotateX(-Math.PI/2);   // 平躺：字面朝上、厚度沿法线
+      const m=new THREE.Mesh(g,getMat('orange'));
+      m.position.set(cursor,0.08,0); m.userData.mat='orange'; m.castShadow=true;
+      parts.push(m); cursor+=w+TRACK;
+    });
+    const total=cursor-TRACK;   // 去掉末尾多余间距
+    parts.forEach(m=>{ m.position.x-=total/2; wordGroup.add(m); });  // 整体左右居中
   });
 // 白色司仪台（舞台左前方）
 function makePodium(){
@@ -522,8 +559,11 @@ function makeTruss(side){
   grp.position.set(side*7.3,0,T_MIDZ);
   return grp;
 }
-tentFrame.add(makeTruss(-1));
-tentFrame.add(makeTruss(1));
+// TRUSS 灯柱独立分组（不随篷布/龙骨隐藏，篷布隐藏时仍可见）
+const trussGroup = new THREE.Group();
+G.event.add(trussGroup);
+trussGroup.add(makeTruss(-1));
+trussGroup.add(makeTruss(1));
 // 篷布（独立材质，按钮切换 半透明/实体/隐藏，不参与材质模式切换）
 const tentMat = new THREE.MeshStandardMaterial({
   color:0xf7f8fa, roughness:0.6, metalness:0,
@@ -752,7 +792,7 @@ const otherFlags=D.flags.filter(f=>!(f[0]<-32 && f[1]>-16 && f[1]<19))
 [...otherFlags,...westFlags].forEach(f=>G.flags.add(makeFlag(f[0],f[1],f[2])));
 
 /* ===== 文字标签 ===== */
-makeLabel('E1栋', 0, -8, 16.6, 'big');
+makeLabel('E1栋', 0, -8, 10.9, 'big');
 makeLabel('F1栋', 43, 1, 25, 'big');
 makeLabel('正门', 0, -1.2, 5.5);
 makeLabel('揭幕仪式区', 0, 5, 3.5);
@@ -900,12 +940,30 @@ tentBtn.addEventListener('click',()=>{
   tentBtn.textContent=s.label;
 });
 
-/* ===== LED 主屏开合（打开中间 3m） ===== */
+/* ===== LED 主屏开合（打开后中间开口 4m） ===== */
 let ledOpen=false;
 const ledBtn=document.getElementById('ledBtn');
 ledBtn.addEventListener('click',()=>{
   ledOpen=!ledOpen;
   ledBtn.textContent=ledOpen?'闭合开合屏':'打开开合屏';
+});
+
+/* ===== 挑檐顶切换（实体 → 半透明 → 隐藏 → 实体） ===== */
+const EAVE_STATES=[
+  {label:'挑檐顶：实体',opacity:1,visible:true},
+  {label:'挑檐顶：半透明',opacity:0.35,visible:true},
+  {label:'挑檐顶：隐藏',opacity:1,visible:false},
+];
+let eaveState=0;
+const eaveBtn=document.getElementById('eaveBtn');
+eaveBtn.addEventListener('click',()=>{
+  eaveState=(eaveState+1)%EAVE_STATES.length;
+  const s=EAVE_STATES[eaveState];
+  eaveRoof.visible=s.visible;
+  eaveMat.transparent=s.opacity<1;
+  eaveMat.opacity=s.opacity;
+  eaveUpperGroup.visible=s.visible;   // 隐藏时连带门廊二层（内凹阳台）一起隐藏
+  eaveBtn.textContent=s.label;
 });
 
 /* ===== 自适应 ===== */
@@ -943,6 +1001,89 @@ function loop() {
   renderer.render(scene, camera);
   labelRenderer.render(scene, camera);
 }
+// 程序化控制接口（DOM 事件桥接，兼容自动化隔离世界；不影响界面与功能）
+document.addEventListener('v3d-cmd', e => {
+  const c = e.detail;
+  if (!c) return;
+  if (c.view){ const v = VIEWS[c.view]; camera.position.set(...v.pos); controls.target.set(...v.tgt); moving = false; }
+  if (c.pos) camera.position.set(...c.pos);
+  if (c.tgt){ controls.target.set(...c.tgt); moving = false; }
+  if (c.view || c.pos || c.tgt) camera.lookAt(controls.target);   // 直接设位后必须刷新朝向
+  if (c.render){ renderer.render(scene, camera); labelRenderer.render(scene, camera); }
+  if (c.snapLed !== undefined){
+    mainLeaves.forEach(m => {
+      m.position.x = c.snapLed ? m.userData.openX : m.userData.closedX;
+      m.position.z = c.snapLed ? m.userData.openZ : m.userData.closedZ;
+    });
+  }
+  if (c.tweak){
+    tentFrame.children.forEach(ch=>{
+      if (ch.material && ch.userData.mat === 'metal'){
+        if ('metalness' in c.tweak) ch.material.metalness = c.tweak.metalness;
+        if ('env' in c.tweak) ch.material.envMapIntensity = c.tweak.env;
+        if ('rough' in c.tweak) ch.material.roughness = c.tweak.rough;
+      }
+    });
+  }
+  if (c.hideFrame !== undefined) tentFrame.visible = !c.hideFrame;
+  if (c.hideCloth !== undefined) tentCloth.visible = !c.hideCloth;
+  if (c.hideAll) Object.values(G).forEach(g => g.visible = false);
+  if (c.showAll) Object.values(G).forEach(g => g.visible = true);
+  if (c.probe){
+    const out = [];
+    if (c.probe === 'env'){
+      out.push({
+        hasEnv: !!scene.environment,
+        envType: scene.environment ? scene.environment.constructor.name : null,
+        envImage: scene.environment && scene.environment.image ? (scene.environment.image.width + 'x' + scene.environment.image.height) : null,
+        exposure: renderer.toneMappingExposure,
+        frameVis: tentFrame.visible, clothVis: tentCloth.visible,
+        frameChildren: tentFrame.children.length,
+        lights: scene.children.filter(ch=>ch.isLight).map(l=>({type:l.type, intensity:l.intensity})),
+      });
+    } else if (c.probe === 'state'){
+      Object.keys(G).forEach(k=> out.push({ group: k, vis: G[k].visible, n: G[k].children.length }));
+    } else if (c.probe === 'event'){
+      G.event.children.forEach((ch,i)=>{
+        const m = ch.material;
+        out.push({ i, type: ch.type, ud: ch.userData && ch.userData.mat,
+          vis: ch.visible, n: ch.children ? ch.children.length : 0,
+          pos: [+(ch.position.x||0).toFixed(1), +(ch.position.y||0).toFixed(1), +(ch.position.z||0).toFixed(1)],
+          col: m && m.color ? m.color.getHexString() : null });
+      });
+    } else if (c.probe === 'buildings'){
+      G.buildings.children.forEach((ch,i)=>{
+        const m = ch.material;
+        out.push({ i, type: ch.type, ud: ch.userData && ch.userData.mat,
+          vis: ch.visible, n: ch.children ? ch.children.length : 0,
+          pos: [+(ch.position.x||0).toFixed(1), +(ch.position.y||0).toFixed(1), +(ch.position.z||0).toFixed(1)],
+          col: m && m.color ? m.color.getHexString() : null });
+      });
+    } else if (c.probe === 'scene'){
+      scene.children.forEach((ch,i)=>{
+        const m = ch.material;
+        out.push({ i, type: ch.type, ud: ch.userData && ch.userData.mat,
+          vis: ch.visible, n: ch.children ? ch.children.length : 0,
+          pos: [+(ch.position.x||0).toFixed(1), +(ch.position.y||0).toFixed(1), +(ch.position.z||0).toFixed(1)],
+          col: m && m.color ? m.color.getHexString() : null });
+      });
+    } else {
+      const src = c.probe === 'tent' ? tentFrame.children : scene.children;
+      src.forEach((ch,i)=>{
+        if (i > 10) return;
+        const m = ch.material;
+        out.push({ type: ch.type, ud: ch.userData && ch.userData.mat,
+          col: m && m.color ? m.color.getHexString() : null,
+          metal: m ? m.metalness : null, rough: m ? m.roughness : null,
+          env: m ? m.envMapIntensity : null, vis: ch.visible });
+      });
+    }
+    document.body.dataset.v3dprobe = JSON.stringify(out);
+  }
+  document.body.dataset.v3dreply = JSON.stringify({
+    cam: camera.position.toArray().map(n=>+n.toFixed(2)),
+    tgt: controls.target.toArray().map(n=>+n.toFixed(2)) });
+});
 loop();
 document.getElementById('loading').style.display = 'none';
 </script>
